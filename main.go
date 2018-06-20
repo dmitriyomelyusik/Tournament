@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/Tournament/controller"
@@ -11,8 +13,19 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// Environment variables that needs to open database
+const (
+	DBNAME  = "DBNAME"
+	PGUSER  = "PGUSER"
+	PGPASS  = "PGPASS"
+	PGHOST  = "PGHOST"
+	SSLMODE = "SSLMODE"
+)
+
 func main() {
-	p, err := postgres.NewDB("user=postgres dbname=postgres password=password sslmode=disable host=127.0.0.1")
+	vars := getEnvVars()
+	conf := fmt.Sprintf("user=%v dbname=%v password=%v sslmode=%v host=%v", vars[PGUSER], vars[DBNAME], vars[PGPASS], vars[SSLMODE], vars[PGHOST])
+	p, err := postgres.NewDB(conf)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -33,4 +46,24 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func getEnvVars() map[string]string {
+	vars := make(map[string]string)
+	vars[PGUSER] = os.Getenv(PGUSER)
+	vars[PGPASS] = os.Getenv(PGPASS)
+	vars[DBNAME] = os.Getenv(DBNAME)
+	vars[PGHOST] = os.Getenv(PGHOST)
+	vars[SSLMODE] = os.Getenv(SSLMODE)
+	isOK := true
+	for key, value := range vars {
+		if value == "" {
+			fmt.Printf("You didn't set environment variable: %v\n", key)
+			isOK = false
+		}
+	}
+	if !isOK {
+		panic("Set all environment variables!")
+	}
+	return vars
 }

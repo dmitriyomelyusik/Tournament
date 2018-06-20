@@ -5,6 +5,7 @@ package postgres
 import (
 	"database/sql"
 
+	"github.com/Tournament/entity"
 	"github.com/Tournament/errors"
 )
 
@@ -20,4 +21,39 @@ func NewDB(conf string) (*Postgres, error) {
 		return nil, errors.Error{Code: errors.DatabaseOpenError, Message: "cannot open database, config: " + conf}
 	}
 	return &Postgres{DB: db}, nil
+}
+
+// UpdateTourAndPlayer updates tournament participants and player balance in one transaction
+func (p *Postgres) UpdateTourAndPlayer(tourID string, player entity.Player) error {
+	tx, err := p.DB.Begin()
+	if err != nil {
+		return errors.Error{Code: errors.UnexpectedError, Message: "update tournament and player: failed to start transaction"}
+	}
+	err = updateTxParticipants(tx, tourID, player)
+	if err != nil {
+		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
+			tx.Rollback().Error()}
+	}
+	dep, err := p.getDeposit(tourID)
+	if err != nil {
+		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
+			tx.Rollback().Error()}
+	}
+	err = updateTxPlayer(tx, player.ID, -1*dep)
+	if err != nil {
+		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
+			tx.Rollback().Error()}
+	}
+	return tx.Commit()
+}
+
+func resultError(res sql.Result, possibleErr string) error {
+	n, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return errors.Error{Code: errors.UnexpectedError, Message: possibleErr}
+	}
+	return nil
 }

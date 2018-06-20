@@ -17,15 +17,18 @@ type ErrCode string
 
 // Here are all of usable errCodes. Do not delete them!
 const (
-	DatabaseOpenError         ErrCode = "databaseOpenError"
-	UnexpectedError           ErrCode = "unexpectedError"
 	PlayerNotFoundError       ErrCode = "playerNotFoundError"
-	NegativePointsNumberError ErrCode = "negativePointsNumberError"
-	DuplicatedIDError         ErrCode = "duplicatedIDError"
-	JSONError                 ErrCode = "jsonError"
-	TransactionError          ErrCode = "transactionError"
-	NegativeDepositError      ErrCode = "negativeDepositError"
 	TournamentNotFoundError   ErrCode = "tournamentNotFoundError"
+	DuplicatedIDError         ErrCode = "duplicatedIDError"
+	NegativePointsNumberError ErrCode = "negativePointsNumberError"
+	NegativeDepositError      ErrCode = "negativeDepositError"
+	NoneParticipantsError     ErrCode = "noneParticipantsError"
+	ClosedTournamentError     ErrCode = "closedTournamentError"
+
+	UnexpectedError   ErrCode = "unexpectedError"
+	JSONError         ErrCode = "jsonError"
+	DatabaseOpenError ErrCode = "databaseOpenError"
+	TransactionError  ErrCode = "transactionError"
 )
 
 func (e Error) Error() string {

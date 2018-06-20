@@ -86,6 +86,33 @@ func (s Server) HandleAnnounce() http.HandlerFunc {
 	}
 }
 
+// HandleJoin handles join query
+func (s Server) HandleJoin() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tourID := r.URL.Query().Get("tournamentId")
+		playerID := r.URL.Query().Get("playerId")
+		err := s.Controller.JoinTournament(tourID, playerID)
+		if err != nil {
+			jsonError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+//HandleResults handles results query
+func (s Server) HandleResults() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tourID := r.URL.Query().Get("tournamentId")
+		res, err := s.Controller.Results(tourID)
+		if err != nil {
+			jsonError(w, err)
+			return
+		}
+		jsonResponse(w, res)
+	}
+}
+
 // NewRouter returns router with configurated and handled pathes
 func NewRouter(s Server) *mux.Router {
 	r := mux.NewRouter()
@@ -93,6 +120,8 @@ func NewRouter(s Server) *mux.Router {
 	r.HandleFunc("/take", s.HandleTake())
 	r.HandleFunc("/balance", s.HandleBalance())
 	r.HandleFunc("/announceTournament", s.HandleAnnounce())
+	r.HandleFunc("/joinTournament", s.HandleJoin())
+	r.HandleFunc("/resultTournament", s.HandleResults())
 	return r
 }
 
@@ -105,9 +134,7 @@ func jsonError(w http.ResponseWriter, err error) {
 		}
 	}
 	switch myErr.Code {
-	case errors.PlayerNotFoundError:
-		w.WriteHeader(http.StatusNotFound)
-	case errors.TournamentNotFoundError:
+	case errors.PlayerNotFoundError, errors.TournamentNotFoundError, errors.NoneParticipantsError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
 		w.WriteHeader(http.StatusNotFound)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
