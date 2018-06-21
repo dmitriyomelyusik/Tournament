@@ -34,3 +34,33 @@ const (
 func (e Error) Error() string {
 	return fmt.Sprintf("Error: %v\nMessage: %v\nInfo: %v", e.Code, e.Message, e.Info)
 }
+
+// Join joins array of errors into one custom error
+func Join(errs ...error) Error {
+	if len(errs) == 0 {
+		return Error{}
+	}
+	myErr, ok := errs[0].(Error)
+	if !ok {
+		myErr = Error{
+			Code:    UnexpectedError,
+			Message: errs[0].Error(),
+		}
+	}
+	for i := 1; i < len(errs); i++ {
+		myErr.Message += "\n" + errs[i].Error()
+	}
+	return myErr
+}
+
+// SetPrefix sets prefix in err message
+func (e Error) SetPrefix(pref string) Error {
+	e.Message = pref + e.Message
+	return e
+}
+
+// SetCode sets ErrCode
+func (e Error) SetCode(code ErrCode) Error {
+	e.Code = code
+	return e
+}

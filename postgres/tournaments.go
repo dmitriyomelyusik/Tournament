@@ -95,29 +95,29 @@ func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
 	var prize int
 	err = row.Scan(&prize)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: "setting winner: cannot read prize from tournament, id: " + id + "\n" +
-			tx.Rollback().Error(), Info: err.Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2).SetPrefix("setting winner: ")
 	}
 	err = updateTxPlayer(tx, winner.ID, prize)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: "setting winner: cannot update player balance after victory, id: " + winner.ID + "\n" +
-			tx.Rollback().Error(), Info: err.Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2).SetPrefix("setting winner: ")
 	}
 	winner.Prize = prize
 	rawWinner, err := json.Marshal(winner)
 	if err != nil {
-		return errors.Error{Code: errors.JSONError, Message: "setting winner: cannot marshal player, id: " + winner.ID + "\n" +
-			tx.Rollback().Error(), Info: err.Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2).SetPrefix("setting winner: cannot marshal player").SetCode(errors.JSONError)
 	}
 	res, err := tx.Exec("UPDATE tournaments SET winner=$1 WHERE id=$2", rawWinner, id)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
-			tx.Rollback().Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2).SetPrefix("setting winner: ")
 	}
 	err = resultError(res, "setting winner: cannot close not existing tournament, id: "+id)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
-			tx.Rollback().Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2).SetPrefix("setting winner: ")
 	}
 	return tx.Commit()
 }

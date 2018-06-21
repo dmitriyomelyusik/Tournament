@@ -31,18 +31,18 @@ func (p *Postgres) UpdateTourAndPlayer(tourID string, player entity.Player) erro
 	}
 	err = updateTxParticipants(tx, tourID, player)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
-			tx.Rollback().Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2)
 	}
 	dep, err := p.getDeposit(tourID)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
-			tx.Rollback().Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2)
 	}
 	err = updateTxPlayer(tx, player.ID, -1*dep)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: err.Error() + "\n" +
-			tx.Rollback().Error()}
+		err2 := tx.Rollback()
+		return errors.Join(err, err2)
 	}
 	return tx.Commit()
 }
