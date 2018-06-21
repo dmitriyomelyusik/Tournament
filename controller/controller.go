@@ -21,9 +21,9 @@ type TourDB interface {
 	CreateTournament(string, int) error
 	GetTournamentState(string) (bool, error)
 	GetWinner(string) (entity.Winners, error)
-	UpdateTourAndPlayer(string, entity.Player) error
+	UpdateTourAndPlayer(string, string) error
 	CloseTournament(string) error
-	GetParticipants(string) ([]entity.Player, error)
+	GetParticipants(string) ([]string, error)
 	SetTournamentWinner(string, entity.Winner) error
 }
 
@@ -39,7 +39,7 @@ func (g Game) Fund(id string, points int) error {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "fund: cannot fund negative number of points"}
 	}
 	if id == "" {
-		return errors.Error{Code: errors.PlayerNotFoundError, Message: "fund: id must be not nil"}
+		return errors.Error{Code: errors.NotFoundError, Message: "fund: id must be not nil"}
 	}
 	_, err := g.PDB.GetPlayer(id)
 	if err != nil {
@@ -54,7 +54,7 @@ func (g Game) Take(id string, points int) error {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "take: cannot take negative number of points"}
 	}
 	if id == "" {
-		return errors.Error{Code: errors.PlayerNotFoundError, Message: "take: id must be not nil"}
+		return errors.Error{Code: errors.NotFoundError, Message: "take: id must be not nil"}
 	}
 	return g.PDB.UpdatePlayer(id, -1*points)
 }
@@ -62,7 +62,7 @@ func (g Game) Take(id string, points int) error {
 // Balance controlls getting actual player balance
 func (g Game) Balance(id string) (entity.Player, error) {
 	if id == "" {
-		return entity.Player{}, errors.Error{Code: errors.PlayerNotFoundError, Message: "balance: id must be not nil"}
+		return entity.Player{}, errors.Error{Code: errors.NotFoundError, Message: "balance: id must be not nil"}
 	}
 	return g.PDB.GetPlayer(id)
 }
@@ -73,7 +73,7 @@ func (g Game) AnnounceTournament(id string, deposit int) error {
 		return errors.Error{Code: errors.NegativeDepositError, Message: "announce: cannot create tournament with non positive deposite, id: " + id}
 	}
 	if id == "" {
-		return errors.Error{Code: errors.TournamentNotFoundError, Message: "announce: id must be not nil"}
+		return errors.Error{Code: errors.NotFoundError, Message: "announce: id must be not nil"}
 	}
 	return g.TDB.CreateTournament(id, deposit)
 }
@@ -81,10 +81,10 @@ func (g Game) AnnounceTournament(id string, deposit int) error {
 // JoinTournament controlls joining player to tournament
 func (g Game) JoinTournament(tourID, playerID string) error {
 	if tourID == "" {
-		return errors.Error{Code: errors.TournamentNotFoundError, Message: "joining tournament: id must be not nil"}
+		return errors.Error{Code: errors.NotFoundError, Message: "joining tournament: id must be not nil"}
 	}
 	if playerID == "" {
-		return errors.Error{Code: errors.PlayerNotFoundError, Message: "joining tournament: id must be not nil"}
+		return errors.Error{Code: errors.NotFoundError, Message: "joining tournament: id must be not nil"}
 	}
 	isOpen, err := g.TDB.GetTournamentState(tourID)
 	if err != nil {
@@ -98,22 +98,18 @@ func (g Game) JoinTournament(tourID, playerID string) error {
 		return err
 	}
 	for i := range p {
-		if p[i].ID == playerID {
+		if p[i] == playerID {
 			return errors.Error{Code: errors.DuplicatedIDError, Message: "joining tournament: cannot join to one tournament twice, playerID: " + playerID}
 		}
 	}
-	player, err := g.PDB.GetPlayer(playerID)
-	if err != nil {
-		return err
-	}
-	return g.TDB.UpdateTourAndPlayer(tourID, player)
+	return g.TDB.UpdateTourAndPlayer(tourID, playerID)
 }
 
 // Results controls getting results from tournament
 // If tournament is opened, it closes it
 func (g Game) Results(tourID string) (entity.Winners, error) {
 	if tourID == "" {
-		return entity.Winners{}, errors.Error{Code: errors.TournamentNotFoundError, Message: "results: id must be not nil"}
+		return entity.Winners{}, errors.Error{Code: errors.NotFoundError, Message: "results: id must be not nil"}
 	}
 	isOpen, err := g.TDB.GetTournamentState(tourID)
 	if err != nil {
@@ -145,6 +141,9 @@ func chooseWinner(g Game, tourID string) (entity.Winner, error) {
 		return entity.Winner{}, errors.Error{Code: errors.NoneParticipantsError, Message: "cannot choose winner: tournament has no participants, id: " + tourID}
 	}
 	rand.Seed(time.Now().UnixNano())
-	win := p[rand.Intn(len(p)-1)]
+	win, err := g.PDB.GetPlayer(p[rand.Intn(len(p)-1)])
+	if err != nil {
+		return entity.Winner{}, err
+	}
 	return entity.Winner{ID: win.ID, Points: win.Points}, nil
 }

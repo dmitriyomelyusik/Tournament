@@ -5,7 +5,6 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/Tournament/entity"
 	"github.com/Tournament/errors"
 )
 
@@ -24,22 +23,22 @@ func NewDB(conf string) (*Postgres, error) {
 }
 
 // UpdateTourAndPlayer updates tournament participants and player balance in one transaction
-func (p *Postgres) UpdateTourAndPlayer(tourID string, player entity.Player) error {
+func (p *Postgres) UpdateTourAndPlayer(tourID, playerID string) error {
 	tx, err := p.DB.Begin()
 	if err != nil {
 		return errors.Error{Code: errors.UnexpectedError, Message: "update tournament and player: failed to start transaction"}
 	}
-	err = updateTxParticipants(tx, tourID, player)
+	err = updateTxParticipants(tx, tourID, playerID)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2)
 	}
-	dep, err := p.getDeposit(tourID)
+	dep, err := p.GetDeposit(tourID)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2)
 	}
-	err = updateTxPlayer(tx, player.ID, -1*dep)
+	err = updateTxPlayer(tx, playerID, -1*dep)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2)
@@ -47,13 +46,14 @@ func (p *Postgres) UpdateTourAndPlayer(tourID string, player entity.Player) erro
 	return tx.Commit()
 }
 
-func resultError(res sql.Result, possibleErr string) error {
+// ResultError checks query result and returns errors, if they occured
+func ResultError(res sql.Result, possibleErr string) error {
 	n, err := res.RowsAffected()
 	if err != nil {
 		return err
 	}
 	if n != 1 {
-		return errors.Error{Code: errors.UnexpectedError, Message: possibleErr}
+		return errors.Error{Code: errors.NotFoundError, Message: possibleErr}
 	}
 	return nil
 }

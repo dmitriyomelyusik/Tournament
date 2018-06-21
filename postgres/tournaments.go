@@ -16,7 +16,7 @@ func (p *Postgres) CloseTournament(id string) error {
 	if err != nil {
 		return err
 	}
-	return resultError(res, "closing tournament: cannot close not existing tournament, id: "+id)
+	return ResultError(res, "closing tournament: cannot close not existing tournament, id: "+id)
 }
 
 // CreateTournament creates tournament with id and deposit
@@ -25,27 +25,18 @@ func (p *Postgres) CreateTournament(id string, deposit int) error {
 	if err != nil {
 		return errors.Error{Code: errors.DuplicatedIDError, Message: "creating tournament: using duplicated id to create tournament, id: " + id, Info: err.Error()}
 	}
-	return resultError(res, "creating tournament: cannot create tournament with id "+id)
+	return ResultError(res, "creating tournament: cannot create tournament with id "+id)
 }
 
 // GetParticipants returns tournament participants
-func (p *Postgres) GetParticipants(id string) ([]entity.Player, error) {
+func (p *Postgres) GetParticipants(id string) ([]string, error) {
 	row := p.DB.QueryRow("SELECT participants FROM tournaments WHERE id=$1", id)
-	var rawPlayers []string
-	err := row.Scan(pq.Array(&rawPlayers))
+	var playerIDs []string
+	err := row.Scan(pq.Array(&playerIDs))
 	if err != nil {
-		return nil, errors.Error{Code: errors.TournamentNotFoundError, Message: "getting participants: cannot get participants from not existing tournament, id: " + id, Info: err.Error()}
+		return nil, errors.Error{Code: errors.NotFoundError, Message: "getting participants: cannot get participants from not existing tournament, id: " + id, Info: err.Error()}
 	}
-	var players []entity.Player
-	for i := range rawPlayers {
-		var p entity.Player
-		err = json.Unmarshal([]byte(rawPlayers[i]), &p)
-		if err != nil {
-			return nil, errors.Error{Code: errors.JSONError, Message: "getting participants: cannot unmarshal player, tournamentID: " + id, Info: err.Error()}
-		}
-		players = append(players, p)
-	}
-	return players, nil
+	return playerIDs, nil
 }
 
 // GetTournamentState returns true, if tournament opens for joining
@@ -54,7 +45,7 @@ func (p *Postgres) GetTournamentState(id string) (bool, error) {
 	var isOpen bool
 	err := row.Scan(&isOpen)
 	if err != nil {
-		return false, errors.Error{Code: errors.TournamentNotFoundError, Message: "getting state: cannot get tournament state from not existing tournament, id: " + id, Info: err.Error()}
+		return false, errors.Error{Code: errors.NotFoundError, Message: "getting state: cannot get tournament state from not existing tournament, id: " + id, Info: err.Error()}
 	}
 	return isOpen, nil
 }
@@ -65,7 +56,7 @@ func (p *Postgres) GetWinner(id string) (entity.Winners, error) {
 	var rawWinner []byte
 	err := row.Scan(&rawWinner)
 	if err != nil {
-		return entity.Winners{}, errors.Error{Code: errors.TournamentNotFoundError, Message: "getting winner: cannot get winner from not existing tournament, id: " + id, Info: err.Error()}
+		return entity.Winners{}, errors.Error{Code: errors.NotFoundError, Message: "getting winner: cannot get winner from not existing tournament, id: " + id, Info: err.Error()}
 	}
 	var winner entity.Winner
 	err = json.Unmarshal(rawWinner, &winner)
@@ -75,12 +66,13 @@ func (p *Postgres) GetWinner(id string) (entity.Winners, error) {
 	return entity.Winners{Winners: []entity.Winner{winner}}, nil
 }
 
-func (p *Postgres) getDeposit(id string) (int, error) {
+// GetDeposit returns tournament deposit
+func (p *Postgres) GetDeposit(id string) (int, error) {
 	row := p.DB.QueryRow("SELECT deposit FROM tournaments WHERE id=$1", id)
 	var deposit int
 	err := row.Scan(&deposit)
 	if err != nil {
-		return 0, errors.Error{Code: errors.TournamentNotFoundError, Message: "getting deposit: cannot get deposit from not existing tournament, id: " + id, Info: err.Error()}
+		return 0, errors.Error{Code: errors.NotFoundError, Message: "getting deposit: cannot get deposit from not existing tournament, id: " + id, Info: err.Error()}
 	}
 	return deposit, nil
 }
@@ -96,7 +88,7 @@ func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
 	err = row.Scan(&prize)
 	if err != nil {
 		err2 := tx.Rollback()
-		return errors.Join(err, err2).SetPrefix("setting winner: ")
+		return errors.Join(err, err2).SetPrefix("setting winner: tournament not exist, id: " + id + "\n").SetCode(errors.NotFoundError)
 	}
 	err = updateTxPlayer(tx, winner.ID, prize)
 	if err != nil {
@@ -114,7 +106,7 @@ func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2).SetPrefix("setting winner: ")
 	}
-	err = resultError(res, "setting winner: cannot close not existing tournament, id: "+id)
+	err = ResultError(res, "setting winner: cannot close not existing tournament, id: "+id)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2).SetPrefix("setting winner: ")
@@ -122,14 +114,19 @@ func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
 	return tx.Commit()
 }
 
-func updateTxParticipants(tx *sql.Tx, id string, player entity.Player) error {
-	rawPlayer, err := json.Marshal(player)
-	if err != nil {
-		return errors.Error{Code: errors.JSONError, Message: "updating participants: cannot marshal player, id: " + player.ID}
-	}
-	res, err := tx.Exec("UPDATE tournaments SET participants=array_append(participants, $1), prize=prize+deposit WHERE id=$2", rawPlayer, id)
+func updateTxParticipants(tx *sql.Tx, tourID, playerID string) error {
+	res, err := tx.Exec("UPDATE tournaments SET participants=array_append(participants, $1), prize=prize+deposit WHERE id=$2", playerID, tourID)
 	if err != nil {
 		return err
 	}
-	return resultError(res, "updating participiants: cannot update participants from not existing tournament, id: "+id)
+	return ResultError(res, "updating participiants: cannot update participants from not existing tournament, id: "+tourID)
+}
+
+// DeleteTournament deletes tournament
+func (p *Postgres) DeleteTournament(id string) error {
+	res, err := p.DB.Exec("DELETE FROM tournaments WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+	return ResultError(res, "deleting tournament: tournament does not exist, id "+id)
 }

@@ -17,18 +17,16 @@ type ErrCode string
 
 // Here are all of usable errCodes. Do not delete them!
 const (
-	PlayerNotFoundError       ErrCode = "playerNotFoundError"
-	TournamentNotFoundError   ErrCode = "tournamentNotFoundError"
+	NotFoundError             ErrCode = "notFoundError"
 	DuplicatedIDError         ErrCode = "duplicatedIDError"
 	NegativePointsNumberError ErrCode = "negativePointsNumberError"
 	NegativeDepositError      ErrCode = "negativeDepositError"
 	NoneParticipantsError     ErrCode = "noneParticipantsError"
 	ClosedTournamentError     ErrCode = "closedTournamentError"
-
-	UnexpectedError   ErrCode = "unexpectedError"
-	JSONError         ErrCode = "jsonError"
-	DatabaseOpenError ErrCode = "databaseOpenError"
-	TransactionError  ErrCode = "transactionError"
+	UnexpectedError           ErrCode = "unexpectedError"
+	JSONError                 ErrCode = "jsonError"
+	DatabaseOpenError         ErrCode = "databaseOpenError"
+	TransactionError          ErrCode = "transactionError"
 )
 
 func (e Error) Error() string {
@@ -48,7 +46,9 @@ func Join(errs ...error) Error {
 		}
 	}
 	for i := 1; i < len(errs); i++ {
-		myErr.Message += "\n" + errs[i].Error()
+		if errs[i] != nil {
+			myErr.Message += "\n" + errs[i].Error()
+		}
 	}
 	return myErr
 }

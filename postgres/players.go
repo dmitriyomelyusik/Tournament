@@ -14,7 +14,7 @@ func (p *Postgres) CreatePlayer(id string, points int) error {
 	if err != nil {
 		return errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"}
 	}
-	return resultError(res, "creating player: cannot create player with id "+id)
+	return ResultError(res, "creating player: cannot create player with id "+id)
 }
 
 // GetPlayer returns player by its id
@@ -23,7 +23,7 @@ func (p *Postgres) GetPlayer(id string) (entity.Player, error) {
 	var points int
 	err := row.Scan(&points)
 	if err != nil {
-		return entity.Player{}, errors.Error{Code: errors.PlayerNotFoundError, Message: "getting player: cannot find player with id " + id}
+		return entity.Player{}, errors.Error{Code: errors.NotFoundError, Message: "getting player: cannot find player with id " + id}
 	}
 	return entity.Player{ID: id, Points: points}, nil
 }
@@ -34,7 +34,7 @@ func (p *Postgres) UpdatePlayer(id string, dif int) error {
 	if err != nil {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif " + strconv.Itoa(dif)}
 	}
-	return resultError(res, "updating player: cannot found player with id "+id)
+	return ResultError(res, "updating player: cannot find player with id "+id)
 }
 
 func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
@@ -42,5 +42,14 @@ func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
 	if err != nil {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif " + strconv.Itoa(dif)}
 	}
-	return resultError(res, "updating player: cannot find player: id "+id)
+	return ResultError(res, "updating player: cannot find player: id "+id)
+}
+
+// DeletePlayer deletes player from database
+func (p *Postgres) DeletePlayer(id string) error {
+	res, err := p.DB.Exec("DELETE FROM players WHERE id=$1", id)
+	if err != nil {
+		return errors.Error{Code: errors.UnexpectedError, Message: "deleting player: " + err.Error()}
+	}
+	return ResultError(res, "deleting player: player does not exist, id "+id)
 }

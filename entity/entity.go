@@ -18,3 +18,13 @@ type Winner struct {
 type Winners struct {
 	Winners []Winner `json:"winners"`
 }
+
+// Tournament is struct for tournament perfomance
+type Tournament struct {
+	ID           string   `json:"id"`
+	Deposit      int      `json:"deposit"`
+	Prize        int      `json:"prize"`
+	Participants []string `json:"participants"`
+	Winner       Winner   `json:"winner"`
+	IsOpen       bool     `json:"isOpen"`
+}
