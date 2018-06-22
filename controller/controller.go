@@ -12,8 +12,9 @@ import (
 // PlayerDB is an interface for database, that used to controll player activity methods
 type PlayerDB interface {
 	GetPlayer(string) (entity.Player, error)
-	CreatePlayer(string, int) error
+	CreatePlayer(string, int) (entity.Player, error)
 	UpdatePlayer(string, int) error
+	DeletePlayer(string) error
 }
 
 // TourDB is an interface for database, that used to controll tournament activity methods
@@ -25,6 +26,7 @@ type TourDB interface {
 	CloseTournament(string) error
 	GetParticipants(string) ([]string, error)
 	SetTournamentWinner(string, entity.Winner) error
+	DeleteTournament(string) error
 }
 
 // Game methods controll game activity
@@ -34,18 +36,18 @@ type Game struct {
 }
 
 // Fund controlls funding player
-func (g Game) Fund(id string, points int) error {
+func (g Game) Fund(id string, points int) (entity.Player, error) {
 	if points < 0 {
-		return errors.Error{Code: errors.NegativePointsNumberError, Message: "fund: cannot fund negative number of points"}
+		return entity.Player{}, errors.Error{Code: errors.NegativePointsNumberError, Message: "fund: cannot fund negative number of points"}
 	}
 	if id == "" {
-		return errors.Error{Code: errors.NotFoundError, Message: "fund: id must be not nil"}
+		return entity.Player{}, errors.Error{Code: errors.NotFoundError, Message: "fund: id must be not nil"}
 	}
 	_, err := g.PDB.GetPlayer(id)
 	if err != nil {
 		return g.PDB.CreatePlayer(id, points)
 	}
-	return g.PDB.UpdatePlayer(id, points)
+	return entity.Player{}, g.PDB.UpdatePlayer(id, points)
 }
 
 // Take controlls taking points
@@ -146,4 +148,20 @@ func chooseWinner(g Game, tourID string) (entity.Winner, error) {
 		return entity.Winner{}, err
 	}
 	return entity.Winner{ID: win.ID, Points: win.Points}, nil
+}
+
+// DeletePlayer controls deleting player
+func (g Game) DeletePlayer(playerID string) error {
+	if playerID == "" {
+		return errors.Error{Code: errors.NotFoundError, Message: "deleting player: cannot delete player with empty id"}
+	}
+	return g.PDB.DeletePlayer(playerID)
+}
+
+// DeleteTournament controls deleting tournament
+func (g Game) DeleteTournament(tourID string) error {
+	if tourID == "" {
+		return errors.Error{Code: errors.NotFoundError, Message: "deleting tournament: cannot delete tournament with empty id"}
+	}
+	return g.TDB.DeleteTournament(tourID)
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/Tournament/controller"
+	"github.com/Tournament/entity"
 	"github.com/Tournament/errors"
 	"github.com/gorilla/mux"
 )
@@ -26,9 +27,14 @@ func (s Server) HandleFund() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		err = s.Controller.Fund(id, p)
+		player, err := s.Controller.Fund(id, p)
 		if err != nil {
 			jsonError(w, err)
+			return
+		}
+		if player != (entity.Player{}) {
+			w.WriteHeader(http.StatusCreated)
+			jsonResponse(w, player)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -113,6 +119,32 @@ func (s Server) HandleResults() http.HandlerFunc {
 	}
 }
 
+// HandleDeleteTour handles deleting tournament
+func (s Server) HandleDeleteTour() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tourID := r.URL.Query().Get("tournamentId")
+		err := s.Controller.DeleteTournament(tourID)
+		if err != nil {
+			jsonError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
+// HandleDeletePlayer handles deleting tournament
+func (s Server) HandleDeletePlayer() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		tourID := r.URL.Query().Get("playerId")
+		err := s.Controller.DeletePlayer(tourID)
+		if err != nil {
+			jsonError(w, err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+}
+
 // NewRouter returns router with configurated and handled pathes
 func NewRouter(s Server) *mux.Router {
 	r := mux.NewRouter()
@@ -122,6 +154,8 @@ func NewRouter(s Server) *mux.Router {
 	r.HandleFunc("/announceTournament", s.HandleAnnounce())
 	r.HandleFunc("/joinTournament", s.HandleJoin())
 	r.HandleFunc("/resultTournament", s.HandleResults())
+	r.HandleFunc("/deleteTournament", s.HandleDeleteTour())
+	r.HandleFunc("/deletePlayer", s.HandleDeletePlayer())
 	return r
 }
 
@@ -134,7 +168,7 @@ func jsonError(w http.ResponseWriter, err error) {
 		}
 	}
 	switch myErr.Code {
-	case errors.PlayerNotFoundError, errors.TournamentNotFoundError, errors.NoneParticipantsError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
+	case errors.NotFoundError, errors.NoneParticipantsError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
 		w.WriteHeader(http.StatusNotFound)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)

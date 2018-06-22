@@ -71,8 +71,11 @@ func TestPlayer_CreatePlayer(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			err := p.CreatePlayer(tc.player.ID, tc.player.Points)
+			player, err := p.CreatePlayer(tc.player.ID, tc.player.Points)
 			assert.Equal(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.player, player)
+			}
 		})
 	}
 
@@ -88,7 +91,7 @@ func TestPlayer_GetPlayer(t *testing.T) {
 		{ID: "createplayer_test3", Points: 200},
 	}
 	for i := range players {
-		err := p.CreatePlayer(players[i].ID, players[i].Points)
+		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -145,7 +148,7 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 		{ID: "updateplayer_test3", Points: 200},
 	}
 	for i := range players {
-		err := p.CreatePlayer(players[i].ID, players[i].Points)
+		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -237,7 +240,7 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 		{ID: "deleteplayer_test3", Points: 200},
 	}
 	for i := range players {
-		err := p.CreatePlayer(players[i].ID, players[i].Points)
+		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -478,14 +481,14 @@ func TestTournament_GetParticipants(t *testing.T) {
 		{ID: "getparticipants_test3", Deposit: 100},
 	}
 	players := []entity.Player{
-		{ID: "getpart_test1", Points: 50},
+		{ID: "getpart_test1", Points: 200},
 		{ID: "getpart_test2", Points: 200},
 		{ID: "getpart_test3", Points: 200},
 		{ID: "getpart_test4", Points: 50},
-		{ID: "getpart_test5", Points: 200},
+		{ID: "getpart_test5", Points: 50},
 		{ID: "getpart_test6", Points: 50},
 	}
-	expParticipants := [][]string{[]string{}, []string{}, []string{}}
+	expParticipants := [][]string{nil, nil, nil}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
 		if err != nil {
@@ -493,7 +496,7 @@ func TestTournament_GetParticipants(t *testing.T) {
 		}
 	}
 	for i := range players {
-		err := p.CreatePlayer(players[i].ID, players[i].Points)
+		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -631,6 +634,7 @@ func TestTournament_GetState(t *testing.T) {
 				t.Fatal(err)
 			}
 			states = append(states, false)
+			continue
 		}
 		states = append(states, true)
 	}
@@ -701,7 +705,7 @@ func TestTournament_GetWinner(t *testing.T) {
 		}
 	}
 	for i := range winners {
-		err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
+		_, err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -781,7 +785,7 @@ func TestTournament_SetWinner(t *testing.T) {
 		}
 	}
 	for i := range winners {
-		err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
+		_, err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -840,5 +844,105 @@ func TestTournament_SetWinner(t *testing.T) {
 	}
 	for i := range winners {
 		p.DeletePlayer(winners[i].ID)
+	}
+}
+
+func TestGama_UpdateTourAndPlayer(t *testing.T) {
+	tournaments := []entity.Tournament{
+		{ID: "updategame_test1", Deposit: 50},
+		{ID: "updategame_test2", Deposit: 50},
+		{ID: "updategame_test3", Deposit: 50},
+	}
+	players := []entity.Player{
+		{ID: "updategame_test1", Points: 50},
+		{ID: "updategame_test2", Points: 100},
+		{ID: "updategame_test3", Points: 150},
+	}
+	for i := range tournaments {
+		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for i := range players {
+		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	tt := []struct {
+		name                 string
+		id                   string
+		participants         []entity.Player
+		expectedPoints       []int
+		expectedParticipants []string
+		expectedUpdateErrors []error
+		expectedGetPartError error
+		expectedGetPlayError []error
+	}{
+		{
+			name:                 "tour 1",
+			id:                   tournaments[0].ID,
+			participants:         players,
+			expectedPoints:       []int{0, 50, 100},
+			expectedParticipants: []string{players[0].ID, players[1].ID, players[2].ID},
+			expectedUpdateErrors: []error{nil, nil, nil},
+			expectedGetPartError: nil,
+			expectedGetPlayError: []error{nil, nil, nil},
+		},
+		{
+			name:                 "tour 2",
+			id:                   tournaments[1].ID,
+			participants:         players,
+			expectedPoints:       []int{0, 0, 50},
+			expectedParticipants: []string{players[1].ID, players[2].ID},
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, nil, nil},
+			expectedGetPartError: nil,
+			expectedGetPlayError: []error{nil, nil, nil},
+		},
+		{
+			name:                 "tour 3",
+			id:                   tournaments[2].ID,
+			participants:         players,
+			expectedPoints:       []int{0, 0, 0},
+			expectedParticipants: []string{players[2].ID},
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, nil},
+			expectedGetPartError: nil,
+			expectedGetPlayError: []error{nil, nil, nil},
+		},
+		{
+			name:                 "fake tour",
+			id:                   "updatingfaketour",
+			participants:         players,
+			expectedPoints:       []int{0, 0, 0},
+			expectedParticipants: nil,
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}},
+			expectedGetPartError: errors.Error{Code: errors.NotFoundError, Message: "getting participants: cannot get participants from not existing tournament, id: updatingfaketour", Info: "sql: no rows in result set"},
+			expectedGetPlayError: []error{nil, nil, nil},
+		},
+	}
+
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			for i, v := range tc.participants {
+				err := p.UpdateTourAndPlayer(tc.id, v.ID)
+				assert.Equal(t, tc.expectedUpdateErrors[i], err)
+			}
+			part, err := p.GetParticipants(tc.id)
+			assert.Equal(t, tc.expectedGetPartError, err)
+			assert.Equal(t, tc.expectedParticipants, part)
+			for i, v := range tc.participants {
+				player, err := p.GetPlayer(v.ID)
+				assert.Equal(t, tc.expectedGetPlayError[i], err)
+				assert.Equal(t, tc.expectedPoints[i], player.Points)
+			}
+		})
+	}
+
+	for i := range tournaments {
+		p.DeleteTournament(tournaments[i].ID)
+	}
+	for i := range players {
+		p.DeletePlayer(players[i].ID)
 	}
 }
