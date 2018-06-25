@@ -10,7 +10,7 @@ import (
 	"github.com/Tournament/entity"
 	"github.com/Tournament/errors"
 	"github.com/stretchr/testify/assert"
-)
+) 
 
 var (
 	p *Postgres
