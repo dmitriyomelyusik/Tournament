@@ -24,7 +24,7 @@ func (s Server) HandleFund() http.HandlerFunc {
 		points := r.URL.Query().Get("points")
 		p, err := strconv.Atoi(points)
 		if err != nil {
-			jsonError(w, err)
+			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot fund player, points is not number: " + points, Info: err.Error()})
 			return
 		}
 		player, err := s.Controller.Fund(id, p)
@@ -48,7 +48,7 @@ func (s Server) HandleTake() http.HandlerFunc {
 		points := r.URL.Query().Get("points")
 		p, err := strconv.Atoi(points)
 		if err != nil {
-			jsonError(w, err)
+			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot fund player, points is not number: " + points, Info: err.Error()})
 			return
 		}
 		err = s.Controller.Take(id, p)
@@ -80,7 +80,7 @@ func (s Server) HandleAnnounce() http.HandlerFunc {
 		dep := r.URL.Query().Get("deposit")
 		deposit, err := strconv.Atoi(dep)
 		if err != nil {
-			jsonError(w, err)
+			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot create tournament, deposit is not number: " + dep, Info: err.Error()})
 			return
 		}
 		err = s.Controller.AnnounceTournament(id, deposit)
@@ -168,7 +168,7 @@ func jsonError(w http.ResponseWriter, err error) {
 		}
 	}
 	switch myErr.Code {
-	case errors.NotFoundError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
+	case errors.NotFoundError, errors.NotNumberError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
 		w.WriteHeader(http.StatusNotFound)
 	case errors.NoneParticipantsError:
 		w.WriteHeader(http.StatusOK)

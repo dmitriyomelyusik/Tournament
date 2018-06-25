@@ -27,6 +27,7 @@ const (
 	JSONError                 ErrCode = "jsonError"
 	DatabaseOpenError         ErrCode = "databaseOpenError"
 	TransactionError          ErrCode = "transactionError"
+	NotNumberError            ErrCode = "notNumberError"
 )
 
 func (e Error) Error() string {

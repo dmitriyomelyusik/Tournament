@@ -649,6 +649,7 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			decoder := json.NewDecoder(res.Body)
 			var winner entity.Winners
 			err = decoder.Decode(&winner)
+			assert.Equal(t, tc.expectedError, err)
 			if len(winner.Winners) > 0 {
 				assert.Equal(t, tc.expectedPrize, winner.Winners[0].Prize)
 			}
