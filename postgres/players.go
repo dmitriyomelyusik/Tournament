@@ -9,12 +9,16 @@ import (
 )
 
 // CreatePlayer creates new player with id and points
-func (p *Postgres) CreatePlayer(id string, points int) error {
+func (p *Postgres) CreatePlayer(id string, points int) (entity.Player, error) {
 	res, err := p.DB.Exec("INSERT INTO players (id, points) values ($1, $2)", id, points)
 	if err != nil {
-		return errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"}
+		return entity.Player{}, errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"}
 	}
-	return ResultError(res, "creating player: cannot create player with id "+id)
+	err = ResultError(res, "creating player: cannot create player with id "+id)
+	if err != nil {
+		return entity.Player{}, err
+	}
+	return entity.Player{ID: id, Points: points}, err
 }
 
 // GetPlayer returns player by its id
