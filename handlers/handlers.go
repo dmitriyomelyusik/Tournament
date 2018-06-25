@@ -168,8 +168,10 @@ func jsonError(w http.ResponseWriter, err error) {
 		}
 	}
 	switch myErr.Code {
-	case errors.NotFoundError, errors.NoneParticipantsError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
+	case errors.NotFoundError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
 		w.WriteHeader(http.StatusNotFound)
+	case errors.NoneParticipantsError:
+		w.WriteHeader(http.StatusOK)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}

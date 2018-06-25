@@ -143,7 +143,7 @@ func chooseWinner(g Game, tourID string) (entity.Winner, error) {
 		return entity.Winner{}, errors.Error{Code: errors.NoneParticipantsError, Message: "cannot choose winner: tournament has no participants, id: " + tourID}
 	}
 	rand.Seed(time.Now().UnixNano())
-	win, err := g.PDB.GetPlayer(p[rand.Intn(len(p)-1)])
+	win, err := g.PDB.GetPlayer(p[rand.Intn(len(p))])
 	if err != nil {
 		return entity.Winner{}, err
 	}
