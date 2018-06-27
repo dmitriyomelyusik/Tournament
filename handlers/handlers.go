@@ -1,3 +1,4 @@
+// Package handlers contains handlers to handle application endpoints
 package handlers
 
 import (

@@ -12,13 +12,13 @@ import (
 func (p *Postgres) CreatePlayer(id string, points int) (entity.Player, error) {
 	res, err := p.DB.Exec("INSERT INTO players (id, points) values ($1, $2)", id, points)
 	if err != nil {
-		return entity.Player{}, errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"}
+		return entity.Player{}, errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + id}
 	}
-	err = ResultError(res, "creating player: cannot create player with id "+id)
+	err = ResultError(res, "creating player: cannot create player, id "+id)
 	if err != nil {
 		return entity.Player{}, err
 	}
-	return entity.Player{ID: id, Points: points}, err
+	return entity.Player{ID: id, Points: points}, nil
 }
 
 // GetPlayer returns player by its id
@@ -27,33 +27,33 @@ func (p *Postgres) GetPlayer(id string) (entity.Player, error) {
 	var points int
 	err := row.Scan(&points)
 	if err != nil {
-		return entity.Player{}, errors.Error{Code: errors.NotFoundError, Message: "getting player: cannot find player with id " + id}
+		return entity.Player{}, errors.Error{Code: errors.NotFoundError, Message: "get player: cannot find player, id " + id}
 	}
 	return entity.Player{ID: id, Points: points}, nil
 }
 
-// UpdatePlayer updates player number of points
+// UpdatePlayer updates player points
 func (p *Postgres) UpdatePlayer(id string, dif int) error {
 	res, err := p.DB.Exec("UPDATE players SET points=points+$1 WHERE id=$2", dif, id)
 	if err != nil {
-		return errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif " + strconv.Itoa(dif)}
+		return errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif " + strconv.Itoa(dif)}
 	}
-	return ResultError(res, "updating player: cannot find player with id "+id)
+	return ResultError(res, "update player: cannot find player, id "+id)
 }
 
 func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
 	res, err := tx.Exec("UPDATE players SET points=points+$1 WHERE id=$2", dif, id)
 	if err != nil {
-		return errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif " + strconv.Itoa(dif)}
+		return errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif " + strconv.Itoa(dif)}
 	}
-	return ResultError(res, "updating player: cannot find player: id "+id)
+	return ResultError(res, "update player: cannot find player, id "+id)
 }
 
 // DeletePlayer deletes player from database
 func (p *Postgres) DeletePlayer(id string) error {
 	res, err := p.DB.Exec("DELETE FROM players WHERE id=$1", id)
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: "deleting player: " + err.Error()}
+		return errors.Error{Code: errors.UnexpectedError, Message: "delete player: " + err.Error()}
 	}
-	return ResultError(res, "deleting player: player does not exist, id "+id)
+	return ResultError(res, "delete player: player does not exist, id "+id)
 }

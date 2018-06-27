@@ -33,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	ctl := controller.Game{TDB: p, PDB: p}
+	ctl := controller.Game{DB: p}
 	server := handlers.Server{Controller: ctl}
 	r := handlers.NewRouter(server)
 	s := http.Server{

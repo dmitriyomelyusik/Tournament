@@ -10,7 +10,7 @@ import (
 	"github.com/Tournament/entity"
 	"github.com/Tournament/errors"
 	"github.com/stretchr/testify/assert"
-) 
+)
 
 var (
 	p *Postgres
@@ -50,7 +50,7 @@ func TestPlayer_CreatePlayer(t *testing.T) {
 		{
 			name:          "duplicate0",
 			player:        players[0],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[0].ID},
 		},
 		{
 			name:          "ok2",
@@ -60,12 +60,12 @@ func TestPlayer_CreatePlayer(t *testing.T) {
 		{
 			name:          "duplicate1",
 			player:        players[1],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[1].ID},
 		},
 		{
 			name:          "duplicate2",
 			player:        players[2],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating player: using duplicated id to create player"},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[2].ID},
 		},
 	}
 
@@ -124,7 +124,7 @@ func TestPlayer_GetPlayer(t *testing.T) {
 			name:           "not existing player",
 			id:             "getplayer_fake",
 			expectedPlayer: entity.Player{},
-			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "getting player: cannot find player with id getplayer_fake"},
+			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "get player: cannot find player, id getplayer_fake"},
 		},
 	}
 
@@ -181,7 +181,7 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 			name:          "not existing player",
 			id:            "getplayer_fake",
 			dif:           200,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "updating player: cannot find player with id getplayer_fake"},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "update player: cannot find player, id getplayer_fake"},
 		},
 		{
 			name:          "ok_take0",
@@ -205,19 +205,19 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 			name:          "err_take0",
 			id:            players[0].ID,
 			dif:           -500,
-			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -500"},
+			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -500"},
 		},
 		{
 			name:          "err_take1",
 			id:            players[1].ID,
 			dif:           -600,
-			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -600"},
+			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -600"},
 		},
 		{
 			name:          "err_take2",
 			id:            players[2].ID,
 			dif:           -700,
-			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -700"},
+			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -700"},
 		},
 	}
 
@@ -258,7 +258,7 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 		{
 			name:          "already deleted",
 			id:            players[0].ID,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting player: player does not exist, id " + players[0].ID},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[0].ID},
 		},
 		{
 			name:          "ok1",
@@ -273,17 +273,17 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 		{
 			name:          "already deleted",
 			id:            players[1].ID,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting player: player does not exist, id " + players[1].ID},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[1].ID},
 		},
 		{
 			name:          "wasn't exist",
 			id:            "deleteplayer_fake",
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting player: player does not exist, id deleteplayer_fake"},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id deleteplayer_fake"},
 		},
 		{
 			name:          "already deleted",
 			id:            players[2].ID,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting player: player does not exist, id " + players[2].ID},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[2].ID},
 		},
 	}
 
@@ -323,7 +323,7 @@ func TestTournament_CreateTournament(t *testing.T) {
 		{
 			name:          "duplicated id 0",
 			tournament:    tournaments[0],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating tournament: using duplicated id to create tournament, id: " + tournaments[0].ID, Info: "pq: duplicate key value violates unique constraint \"tournaments_pkey\""},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[0].ID},
 		},
 		{
 			name:          "ok2",
@@ -333,12 +333,12 @@ func TestTournament_CreateTournament(t *testing.T) {
 		{
 			name:          "duplicated id 1",
 			tournament:    tournaments[1],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating tournament: using duplicated id to create tournament, id: " + tournaments[1].ID, Info: "pq: duplicate key value violates unique constraint \"tournaments_pkey\""},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[1].ID},
 		},
 		{
 			name:          "duplicated id 2",
 			tournament:    tournaments[2],
-			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "creating tournament: using duplicated id to create tournament, id: " + tournaments[2].ID, Info: "pq: duplicate key value violates unique constraint \"tournaments_pkey\""},
+			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[2].ID},
 		},
 	}
 
@@ -379,7 +379,7 @@ func TestTournament_DeleteTournament(t *testing.T) {
 		{
 			name:          "already deleted",
 			id:            tournaments[0].ID,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting tournament: tournament does not exist, id " + tournaments[0].ID},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete tournament: tournament does not exist, id " + tournaments[0].ID},
 		},
 		{
 			name:          "ok1",
@@ -389,7 +389,7 @@ func TestTournament_DeleteTournament(t *testing.T) {
 		{
 			name:          "fake id",
 			id:            "deletetournaments_fake",
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "deleting tournament: tournament does not exist, id deletetournaments_fake"},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete tournament: tournament does not exist, id deletetournaments_fake"},
 		},
 		{
 			name:          "ok2",
@@ -454,8 +454,8 @@ func TestTournament_CloseTournament(t *testing.T) {
 			name:               "fake id",
 			id:                 "closetournaments_fake",
 			expectedState:      false,
-			expectedStateError: errors.Error{Code: errors.NotFoundError, Message: "getting state: cannot get tournament state from not existing tournament, id: closetournaments_fake", Info: "sql: no rows in result set"},
-			expectedError:      errors.Error{Code: errors.NotFoundError, Message: "closing tournament: cannot close not existing tournament, id: closetournaments_fake"},
+			expectedStateError: errors.Error{Code: errors.NotFoundError, Message: "get state: cannot get tournament state from not existing tournament, id: closetournaments_fake"},
+			expectedError:      errors.Error{Code: errors.NotFoundError, Message: "close tournament: cannot close not existing tournament, id: closetournaments_fake"},
 		},
 	}
 
@@ -538,7 +538,7 @@ func TestTournament_GetParticipants(t *testing.T) {
 			name:                 "fail",
 			id:                   "getparts_fake",
 			expectedParticipants: nil,
-			expectedError:        errors.Error(errors.Error{Code: errors.NotFoundError, Message: "getting participants: cannot get participants from not existing tournament, id: getparts_fake", Info: "sql: no rows in result set"}),
+			expectedError:        errors.Error(errors.Error{Code: errors.NotFoundError, Message: "get participants: cannot get participants from not existing tournament, id: getparts_fake"}),
 		},
 	}
 
@@ -598,7 +598,7 @@ func TestTournament_GetDeposit(t *testing.T) {
 			name:            "fake id",
 			id:              "getdeposit_fake",
 			expectedDeposit: 0,
-			expectedError:   errors.Error{Code: errors.NotFoundError, Message: "getting deposit: cannot get deposit from not existing tournament, id: getdeposit_fake", Info: "sql: no rows in result set"},
+			expectedError:   errors.Error{Code: errors.NotFoundError, Message: "get deposit: cannot get deposit from not existing tournament, id: getdeposit_fake"},
 		},
 	}
 
@@ -666,7 +666,7 @@ func TestTournament_GetState(t *testing.T) {
 			name:          "fake id",
 			id:            "getstate_fake",
 			expectedState: false,
-			expectedError: errors.Error{Code: errors.NotFoundError, Message: "getting state: cannot get tournament state from not existing tournament, id: getstate_fake", Info: "sql: no rows in result set"},
+			expectedError: errors.Error{Code: errors.NotFoundError, Message: "get state: cannot get tournament state from not existing tournament, id: getstate_fake"},
 		},
 	}
 
@@ -747,7 +747,7 @@ func TestTournament_GetWinner(t *testing.T) {
 			name:           "fail",
 			id:             "getwinner_fake",
 			expectedWinner: entity.Winners{},
-			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "getting winner: cannot get winner from not existing tournament, id: getwinner_fake", Info: "sql: no rows in result set"}),
+			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "get winner: cannot get winner from not existing tournament, id: getwinner_fake"}),
 		},
 	}
 
@@ -823,7 +823,7 @@ func TestTournament_SetWinner(t *testing.T) {
 			id:             "setwinner_fake",
 			winner:         entity.Winner{},
 			expectedWinner: entity.Winners{},
-			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "setting winner: tournament not exist, id: setwinner_fake\nsql: no rows in result set"}),
+			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "set winner: tournament not exist, id: setwinner_fake\nsql: no rows in result set"}),
 		},
 	}
 
@@ -896,7 +896,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			participants:         players,
 			expectedPoints:       []int{0, 0, 50},
 			expectedParticipants: []string{players[1].ID, players[2].ID},
-			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, nil, nil},
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -50"}, nil, nil},
 			expectedGetPartError: nil,
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
@@ -906,7 +906,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			participants:         players,
 			expectedPoints:       []int{0, 0, 0},
 			expectedParticipants: []string{players[2].ID},
-			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -50"}, nil},
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -50"}, errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -50"}, nil},
 			expectedGetPartError: nil,
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
@@ -916,8 +916,8 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			participants:         players,
 			expectedPoints:       []int{0, 0, 0},
 			expectedParticipants: nil,
-			expectedUpdateErrors: []error{errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "updating participiants: cannot update participants from not existing tournament, id: updatingfaketour"}},
-			expectedGetPartError: errors.Error{Code: errors.NotFoundError, Message: "getting participants: cannot get participants from not existing tournament, id: updatingfaketour", Info: "sql: no rows in result set"},
+			expectedUpdateErrors: []error{errors.Error{Code: errors.NotFoundError, Message: "update participiants: cannot update participants in not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "update participiants: cannot update participants in not existing tournament, id: updatingfaketour"}, errors.Error{Code: errors.NotFoundError, Message: "update participiants: cannot update participants in not existing tournament, id: updatingfaketour"}},
+			expectedGetPartError: errors.Error{Code: errors.NotFoundError, Message: "get participants: cannot get participants from not existing tournament, id: updatingfaketour"},
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
 	}

@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatalf("Cannot open database: %v", err)
 	}
-	r := NewRouter(Server{Controller: controller.Game{TDB: p, PDB: p}})
+	r := NewRouter(Server{Controller: controller.Game{DB: p}})
 	ts = httptest.NewServer(r)
 	defer ts.Close()
 	code := m.Run()
@@ -486,7 +486,7 @@ func TestHandlers_JoinHandler(t *testing.T) {
 				{ID: players[0].ID, Points: players[0].Points - tournaments[1].Deposit - tournaments[0].Deposit},
 				{ID: players[1].ID, Points: players[1].Points - tournaments[1].Deposit - tournaments[0].Deposit},
 				{ID: players[2].ID, Points: players[2].Points - tournaments[0].Deposit}},
-			expectedJoinError:  []error{nil, nil, errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -100"}},
+			expectedJoinError:  []error{nil, nil, errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -100"}},
 			expectedJoinStatus: []int{http.StatusOK, http.StatusOK, http.StatusNotFound},
 			expectedError:      nil,
 		},
@@ -498,7 +498,7 @@ func TestHandlers_JoinHandler(t *testing.T) {
 				{ID: players[0].ID, Points: players[0].Points - tournaments[2].Deposit - tournaments[1].Deposit - tournaments[0].Deposit},
 				{ID: players[1].ID, Points: players[1].Points - tournaments[1].Deposit - tournaments[0].Deposit},
 				{ID: players[2].ID, Points: players[2].Points - tournaments[0].Deposit}},
-			expectedJoinError:  []error{nil, errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -100"}, errors.Error{Code: errors.NegativePointsNumberError, Message: "updating player: cannot update points numbers with dif -100"}},
+			expectedJoinError:  []error{nil, errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -100"}, errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -100"}},
 			expectedJoinStatus: []int{http.StatusOK, http.StatusNotFound, http.StatusNotFound},
 			expectedError:      nil,
 		},
@@ -608,7 +608,7 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			expectedStatus:     http.StatusOK,
 			expectedPrize:      tournaments[0].Deposit * 3,
 			expectedJoinStatus: http.StatusNotFound,
-			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "joining tournament: cannot join to closed tournament"},
+			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "join tournament: cannot join to closed tournament, tourID: " + tournaments[0].ID},
 		},
 		{
 			name:               "announce_ok1",
@@ -617,7 +617,7 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			expectedStatus:     http.StatusOK,
 			expectedPrize:      tournaments[1].Deposit * 2,
 			expectedJoinStatus: http.StatusNotFound,
-			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "joining tournament: cannot join to closed tournament"},
+			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "join tournament: cannot join to closed tournament, tourID: " + tournaments[1].ID},
 		},
 		{
 			name:               "announce_ok2",
@@ -626,7 +626,7 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			expectedStatus:     http.StatusOK,
 			expectedPrize:      tournaments[2].Deposit,
 			expectedJoinStatus: http.StatusNotFound,
-			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "joining tournament: cannot join to closed tournament"},
+			expectedJoinError:  errors.Error{Code: errors.ClosedTournamentError, Message: "join tournament: cannot join to closed tournament, tourID: " + tournaments[2].ID},
 		},
 		{
 			name:               "announce_fake",
@@ -635,7 +635,7 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			expectedStatus:     http.StatusNotFound,
 			expectedPrize:      0,
 			expectedJoinStatus: http.StatusNotFound,
-			expectedJoinError:  errors.Error{Code: errors.NotFoundError, Message: "getting state: cannot get tournament state from not existing tournament, id: announce_fake", Info: "sql: no rows in result set"},
+			expectedJoinError:  errors.Error{Code: errors.NotFoundError, Message: "get state: cannot get tournament state from not existing tournament, id: announce_fake"},
 		},
 	}
 

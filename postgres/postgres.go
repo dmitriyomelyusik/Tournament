@@ -8,7 +8,7 @@ import (
 	"github.com/Tournament/errors"
 )
 
-// Postgres is the struct that contains DB and implements methods for handling databases
+// Postgres is a postgres database
 type Postgres struct {
 	DB *sql.DB
 }
@@ -17,7 +17,7 @@ type Postgres struct {
 func NewDB(conf string) (*Postgres, error) {
 	db, err := sql.Open("postgres", conf)
 	if err != nil {
-		return nil, errors.Error{Code: errors.DatabaseOpenError, Message: "cannot open database, config: " + conf}
+		return nil, errors.Error{Code: errors.DatabaseOpenError, Message: "cannot open database, config: " + conf, Info: err.Error()}
 	}
 	return &Postgres{DB: db}, nil
 }
@@ -26,7 +26,7 @@ func NewDB(conf string) (*Postgres, error) {
 func (p *Postgres) UpdateTourAndPlayer(tourID, playerID string) error {
 	tx, err := p.DB.Begin()
 	if err != nil {
-		return errors.Error{Code: errors.UnexpectedError, Message: "update tournament and player: failed to start transaction"}
+		return errors.Error{Code: errors.UnexpectedError, Message: "update tournament and player: failed to start transaction", Info: err.Error()}
 	}
 	err = updateTxParticipants(tx, tourID, playerID)
 	if err != nil {

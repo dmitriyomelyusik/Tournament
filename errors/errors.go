@@ -1,4 +1,4 @@
-// Package errors provides using custom errors with convinient structure
+// Package errors provides usage of custom errors with custom structure
 package errors
 
 import (
@@ -39,16 +39,23 @@ func Join(errs ...error) Error {
 	if len(errs) == 0 {
 		return Error{}
 	}
-	myErr, ok := errs[0].(Error)
+	myErr := Transform(errs[0])
+	for i := 1; i < len(errs); i++ {
+		if errs[i] != nil {
+			err := Transform(errs[i])
+			myErr.Message += "\n\t" + err.Message
+		}
+	}
+	return myErr
+}
+
+// Transform transforms error to Error
+func Transform(err error) Error {
+	myErr, ok := err.(Error)
 	if !ok {
 		myErr = Error{
 			Code:    UnexpectedError,
-			Message: errs[0].Error(),
-		}
-	}
-	for i := 1; i < len(errs); i++ {
-		if errs[i] != nil {
-			myErr.Message += "\n" + errs[i].Error()
+			Message: err.Error(),
 		}
 	}
 	return myErr
