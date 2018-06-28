@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 	"github.com/stretchr/testify/assert"
 )
 

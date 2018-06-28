@@ -10,11 +10,12 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	"github.com/Tournament/controller"
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
-	"github.com/Tournament/postgres"
+	"github.com/dmitriyomelyusik/Tournament/controller"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/postgres"
 )
 
 var (
@@ -150,9 +151,7 @@ func TestHandlers_TakeHandler(t *testing.T) {
 	client := http.Client{}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 	tt := []struct {
@@ -234,9 +233,7 @@ func TestHandlers_TakeHandler(t *testing.T) {
 
 	for i := range players {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 }
@@ -252,9 +249,7 @@ func TestHandlers_BalanceHandler(t *testing.T) {
 	client := http.Client{}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 	tt := []struct {
@@ -348,9 +343,7 @@ func TestHandlers_BalanceHandler(t *testing.T) {
 
 	for i := range players {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 }
@@ -418,9 +411,7 @@ func TestHandlers_AnnounceHandler(t *testing.T) {
 
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 }
@@ -439,23 +430,15 @@ func TestHandlers_JoinHandler(t *testing.T) {
 	client := http.Client{}
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/announceTournament?tournamentId=%v&deposit=%v", ts.URL, tournaments[i].ID, tournaments[i].Deposit), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = client.Do(req)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = client.Do(req)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}
 	tt := []struct {
 		name               string
@@ -535,16 +518,12 @@ func TestHandlers_JoinHandler(t *testing.T) {
 
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 }
@@ -563,33 +542,21 @@ func TestHandlers_ResultHandler(t *testing.T) {
 	client := http.Client{}
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/announceTournament?tournamentId=%v&deposit=%v", ts.URL, tournaments[i].ID, tournaments[i].Deposit), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = client.Do(req)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		_, err = client.Do(req)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 
 		for j := range tournaments {
 			req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/joinTournament?tournamentId=%v&playerId=%v", ts.URL, tournaments[j].ID, players[i].ID), nil)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 			_, err = client.Do(req)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 		}
 	}
 	tt := []struct {
@@ -668,16 +635,12 @@ func TestHandlers_ResultHandler(t *testing.T) {
 
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		client.Do(req)
 	}
 }

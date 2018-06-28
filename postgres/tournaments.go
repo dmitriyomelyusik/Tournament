@@ -6,8 +6,8 @@ import (
 
 	"github.com/lib/pq"
 
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 )
 
 // CloseTournament closes tournament in transaction
@@ -16,7 +16,7 @@ func (p *Postgres) CloseTournament(id string) error {
 	if err != nil {
 		return err
 	}
-	return ResultError(res, "close tournament: cannot close not existing tournament, id: "+id)
+	return resultError(res, "close tournament: cannot close not existing tournament, id: "+id)
 }
 
 // CreateTournament creates tournament with id and deposit
@@ -25,7 +25,7 @@ func (p *Postgres) CreateTournament(id string, deposit int) error {
 	if err != nil {
 		return errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + id}
 	}
-	return ResultError(res, "create tournament: cannot create tournament with id "+id)
+	return resultError(res, "create tournament: cannot create tournament with id "+id)
 }
 
 // GetParticipants returns tournament participants
@@ -109,7 +109,7 @@ func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2).SetPrefix("set winner: ")
 	}
-	err = ResultError(res, "set winner: cannot close not existing tournament, id: "+id)
+	err = resultError(res, "set winner: cannot close not existing tournament, id: "+id)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2).SetPrefix("set winner: ")
@@ -122,7 +122,7 @@ func updateTxParticipants(tx *sql.Tx, tourID, playerID string) error {
 	if err != nil {
 		return err
 	}
-	return ResultError(res, "update participiants: cannot update participants in not existing tournament, id: "+tourID)
+	return resultError(res, "update participiants: cannot update participants in not existing tournament, id: "+tourID)
 }
 
 // DeleteTournament deletes tournament
@@ -131,5 +131,5 @@ func (p *Postgres) DeleteTournament(id string) error {
 	if err != nil {
 		return err
 	}
-	return ResultError(res, "delete tournament: tournament does not exist, id "+id)
+	return resultError(res, "delete tournament: tournament does not exist, id "+id)
 }

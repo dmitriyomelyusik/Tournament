@@ -5,8 +5,8 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 )
 
 // PlayerDB is an interface for database, that used to controll player activity methods

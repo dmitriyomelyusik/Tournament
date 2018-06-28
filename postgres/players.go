@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"strconv"
 
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 )
 
 // CreatePlayer creates new player with id and points
@@ -14,7 +14,7 @@ func (p *Postgres) CreatePlayer(id string, points int) (entity.Player, error) {
 	if err != nil {
 		return entity.Player{}, errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + id}
 	}
-	err = ResultError(res, "creating player: cannot create player, id "+id)
+	err = resultError(res, "creating player: cannot create player, id "+id)
 	if err != nil {
 		return entity.Player{}, err
 	}
@@ -38,7 +38,7 @@ func (p *Postgres) UpdatePlayer(id string, dif int) error {
 	if err != nil {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif " + strconv.Itoa(dif)}
 	}
-	return ResultError(res, "update player: cannot find player, id "+id)
+	return resultError(res, "update player: cannot find player, id "+id)
 }
 
 func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
@@ -46,7 +46,7 @@ func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
 	if err != nil {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif " + strconv.Itoa(dif)}
 	}
-	return ResultError(res, "update player: cannot find player, id "+id)
+	return resultError(res, "update player: cannot find player, id "+id)
 }
 
 // DeletePlayer deletes player from database
@@ -55,5 +55,5 @@ func (p *Postgres) DeletePlayer(id string) error {
 	if err != nil {
 		return errors.Error{Code: errors.UnexpectedError, Message: "delete player: " + err.Error()}
 	}
-	return ResultError(res, "delete player: player does not exist, id "+id)
+	return resultError(res, "delete player: player does not exist, id "+id)
 }

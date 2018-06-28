@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Tournament/controller"
-	"github.com/Tournament/entity"
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/controller"
+	"github.com/dmitriyomelyusik/Tournament/entity"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 	"github.com/gorilla/mux"
 )
 
@@ -21,8 +21,9 @@ type Server struct {
 // HandleFund handles fund query
 func (s Server) HandleFund() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Query().Get("playerId")
-		points := r.URL.Query().Get("points")
+		query := r.URL.Query()
+		id := query.Get("playerId")
+		points := query.Get("points")
 		p, err := strconv.Atoi(points)
 		if err != nil {
 			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot fund player, points is not number: " + points, Info: err.Error()})
@@ -34,19 +35,18 @@ func (s Server) HandleFund() http.HandlerFunc {
 			return
 		}
 		if player != (entity.Player{}) {
-			w.WriteHeader(http.StatusCreated)
-			jsonResponse(w, player)
+			jsonResponse(w, player, http.StatusCreated)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
 // HandleTake handles take query
 func (s Server) HandleTake() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Query().Get("playerId")
-		points := r.URL.Query().Get("points")
+		query := r.URL.Query()
+		id := query.Get("playerId")
+		points := query.Get("points")
 		p, err := strconv.Atoi(points)
 		if err != nil {
 			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot fund player, points is not number: " + points, Info: err.Error()})
@@ -57,7 +57,6 @@ func (s Server) HandleTake() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -70,15 +69,16 @@ func (s Server) HandleBalance() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		jsonResponse(w, p)
+		jsonResponse(w, p, http.StatusOK)
 	}
 }
 
 // HandleAnnounce handles announce query
 func (s Server) HandleAnnounce() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id := r.URL.Query().Get("tournamentId")
-		dep := r.URL.Query().Get("deposit")
+		query := r.URL.Query()
+		id := query.Get("tournamentId")
+		dep := query.Get("deposit")
 		deposit, err := strconv.Atoi(dep)
 		if err != nil {
 			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot create tournament, deposit is not number: " + dep, Info: err.Error()})
@@ -89,21 +89,20 @@ func (s Server) HandleAnnounce() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
 // HandleJoin handles join query
 func (s Server) HandleJoin() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		tourID := r.URL.Query().Get("tournamentId")
-		playerID := r.URL.Query().Get("playerId")
+		query := r.URL.Query()
+		tourID := query.Get("tournamentId")
+		playerID := query.Get("playerId")
 		err := s.Controller.JoinTournament(tourID, playerID)
 		if err != nil {
 			jsonError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -116,7 +115,7 @@ func (s Server) HandleResults() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		jsonResponse(w, res)
+		jsonResponse(w, res, http.StatusOK)
 	}
 }
 
@@ -129,7 +128,6 @@ func (s Server) HandleDeleteTour() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -142,7 +140,6 @@ func (s Server) HandleDeletePlayer() http.HandlerFunc {
 			jsonError(w, err)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 
@@ -168,18 +165,20 @@ func jsonError(w http.ResponseWriter, err error) {
 			Message: err.Error(),
 		}
 	}
+	var status int
 	switch myErr.Code {
 	case errors.NotFoundError, errors.NotNumberError, errors.NegativePointsNumberError, errors.NegativeDepositError, errors.DuplicatedIDError, errors.ClosedTournamentError:
-		w.WriteHeader(http.StatusNotFound)
+		status = http.StatusNotFound
 	case errors.NoneParticipantsError:
-		w.WriteHeader(http.StatusOK)
+		status = http.StatusOK
 	default:
-		w.WriteHeader(http.StatusInternalServerError)
+		status = http.StatusInternalServerError
 	}
-	jsonResponse(w, myErr)
+	jsonResponse(w, myErr, status)
 }
 
-func jsonResponse(w http.ResponseWriter, data interface{}) {
+func jsonResponse(w http.ResponseWriter, data interface{}, status int) {
+	w.WriteHeader(status)
 	w.Header().Set("content-type", "application/json")
 	encoder := json.NewEncoder(w)
 	if err := encoder.Encode(data); err != nil {

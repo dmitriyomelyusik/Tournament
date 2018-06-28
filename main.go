@@ -7,9 +7,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/Tournament/controller"
-	"github.com/Tournament/handlers"
-	"github.com/Tournament/postgres"
+	"github.com/dmitriyomelyusik/Tournament/controller"
+	"github.com/dmitriyomelyusik/Tournament/handlers"
+	"github.com/dmitriyomelyusik/Tournament/postgres"
 	_ "github.com/lib/pq"
 )
 
@@ -55,14 +55,14 @@ func getEnvVars() map[string]string {
 	vars[DBNAME] = os.Getenv(DBNAME)
 	vars[PGHOST] = os.Getenv(PGHOST)
 	vars[SSLMODE] = os.Getenv(SSLMODE)
-	isOK := true
+	var lostVars bool
 	for key, value := range vars {
 		if value == "" {
 			fmt.Printf("You didn't set environment variable: %v\n", key)
-			isOK = false
+			lostVars = true
 		}
 	}
-	if !isOK {
+	if lostVars {
 		panic("Set all environment variables!")
 	}
 	return vars

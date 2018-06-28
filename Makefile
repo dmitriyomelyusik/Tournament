@@ -21,3 +21,4 @@ dockerbuild:
 
 dockerrun:
 	docker run --rm --name tournament -p 8080:8080 --net=host tournament
+	

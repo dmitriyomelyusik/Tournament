@@ -5,7 +5,7 @@ package postgres
 import (
 	"database/sql"
 
-	"github.com/Tournament/errors"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 )
 
 // Postgres is a postgres database
@@ -46,8 +46,7 @@ func (p *Postgres) UpdateTourAndPlayer(tourID, playerID string) error {
 	return tx.Commit()
 }
 
-// ResultError checks query result and returns errors, if they occured
-func ResultError(res sql.Result, possibleErr string) error {
+func resultError(res sql.Result, possibleErr string) error {
 	n, err := res.RowsAffected()
 	if err != nil {
 		return err
