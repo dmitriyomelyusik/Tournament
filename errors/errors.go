@@ -26,8 +26,11 @@ const (
 	UnexpectedError           ErrCode = "unexpectedError"
 	JSONError                 ErrCode = "jsonError"
 	DatabaseOpenError         ErrCode = "databaseOpenError"
+	DatabaseCreatingError     ErrCode = "databaseCreatingError"
+	DatabasePingError         ErrCode = "databasePingError"
 	TransactionError          ErrCode = "transactionError"
 	NotNumberError            ErrCode = "notNumberError"
+	ConnectionError           ErrCode = "connectionError"
 )
 
 func (e Error) Error() string {

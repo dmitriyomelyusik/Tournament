@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/dmitriyomelyusik/Tournament/entity"
 	"github.com/dmitriyomelyusik/Tournament/errors"
 	"github.com/stretchr/testify/assert"
@@ -92,9 +94,11 @@ func TestPlayer_GetPlayer(t *testing.T) {
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(players[i].ID)
+			require.NoError(t, err)
+		}(i)
 	}
 	tt := []struct {
 		name           string
@@ -135,10 +139,6 @@ func TestPlayer_GetPlayer(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
-
-	for i := range players {
-		p.DeletePlayer(players[i].ID)
-	}
 }
 
 func TestPlayer_UpdatePlayer(t *testing.T) {
@@ -149,9 +149,11 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(players[i].ID)
+			require.NoError(t, err)
+		}(i)
 	}
 	tt := []struct {
 		name          string
@@ -227,10 +229,6 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
-
-	for i := range players {
-		p.DeletePlayer(players[i].ID)
-	}
 }
 
 func TestPlayer_DeletePlayer(t *testing.T) {
@@ -241,9 +239,7 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}
 	tt := []struct {
 		name          string
@@ -362,9 +358,7 @@ func TestTournament_DeleteTournament(t *testing.T) {
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 	}
 	tt := []struct {
 		name          string
@@ -418,9 +412,10 @@ func TestTournament_CloseTournament(t *testing.T) {
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	tt := []struct {
 		name               string
@@ -468,10 +463,6 @@ func TestTournament_CloseTournament(t *testing.T) {
 			assert.Equal(t, tc.expectedStateError, err)
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
 }
 
 func TestTournament_GetParticipants(t *testing.T) {
@@ -491,15 +482,17 @@ func TestTournament_GetParticipants(t *testing.T) {
 	expParticipants := [][]string{nil, nil, nil}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(players[i].ID)
+		}(i)
 	}
 	rand.Seed(time.Now().UnixNano())
 	for i := range players {
@@ -549,13 +542,6 @@ func TestTournament_GetParticipants(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
-	for i := range players {
-		p.DeletePlayer(players[i].ID)
-	}
 }
 
 func TestTournament_GetDeposit(t *testing.T) {
@@ -566,9 +552,10 @@ func TestTournament_GetDeposit(t *testing.T) {
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	tt := []struct {
 		name            string
@@ -609,10 +596,6 @@ func TestTournament_GetDeposit(t *testing.T) {
 			assert.Equal(t, tc.expectedDeposit, dep)
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
 }
 
 func TestTournament_GetState(t *testing.T) {
@@ -625,14 +608,13 @@ func TestTournament_GetState(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 		if rand.Int()%2 == 0 {
 			err = p.CloseTournament(tournaments[i].ID)
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 			states = append(states, false)
 			continue
 		}
@@ -677,10 +659,6 @@ func TestTournament_GetState(t *testing.T) {
 			assert.Equal(t, tc.expectedState, state)
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
 }
 
 func TestTournament_GetWinner(t *testing.T) {
@@ -697,26 +675,26 @@ func TestTournament_GetWinner(t *testing.T) {
 		{ID: "getwinner_test5", Points: 200},
 		{ID: "getwinner_test6", Points: 50},
 	}
-	expWinner := []entity.Winner{}
+	var expWinner []entity.Winner
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	for i := range winners {
 		_, err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(winners[i].ID)
+		}(i)
 	}
 	rand.Seed(time.Now().UnixNano())
 	for i := range tournaments {
 		j := rand.Intn(len(winners))
 		err := p.SetTournamentWinner(tournaments[i].ID, winners[j])
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
 		expWinner = append(expWinner, winners[j])
 	}
 	tt := []struct {
@@ -758,13 +736,6 @@ func TestTournament_GetWinner(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
-	for i := range winners {
-		p.DeletePlayer(winners[i].ID)
-	}
 }
 
 func TestTournament_SetWinner(t *testing.T) {
@@ -780,15 +751,17 @@ func TestTournament_SetWinner(t *testing.T) {
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	for i := range winners {
 		_, err := p.CreatePlayer(winners[i].ID, winners[i].Prize)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(winners[i].ID)
+		}(i)
 	}
 	tt := []struct {
 		name           string
@@ -838,13 +811,6 @@ func TestTournament_SetWinner(t *testing.T) {
 			}
 		})
 	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
-	for i := range winners {
-		p.DeletePlayer(winners[i].ID)
-	}
 }
 
 func TestGama_UpdateTourAndPlayer(t *testing.T) {
@@ -860,15 +826,17 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeleteTournament(tournaments[i].ID)
+		}(i)
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
-		if err != nil {
-			t.Fatal(err)
-		}
+		require.NoError(t, err)
+		defer func(i int) {
+			err = p.DeletePlayer(players[i].ID)
+		}(i)
 	}
 	tt := []struct {
 		name                 string
@@ -937,12 +905,5 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 				assert.Equal(t, tc.expectedPoints[i], player.Points)
 			}
 		})
-	}
-
-	for i := range tournaments {
-		p.DeleteTournament(tournaments[i].ID)
-	}
-	for i := range players {
-		p.DeletePlayer(players[i].ID)
 	}
 }

@@ -134,10 +134,9 @@ func TestHandlers_FundHandler(t *testing.T) {
 
 	for i := range players {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
-		client.Do(req)
+		require.NoError(t, err)
+		_, err = client.Do(req)
+		require.NoError(t, err)
 	}
 }
 
@@ -152,7 +151,14 @@ func TestHandlers_TakeHandler(t *testing.T) {
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
 		require.NoError(t, err)
-		client.Do(req)
+		_, err = client.Do(req)
+		require.NoError(t, err)
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
+			require.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 	}
 	tt := []struct {
 		name           string
@@ -230,12 +236,6 @@ func TestHandlers_TakeHandler(t *testing.T) {
 			assert.Equal(t, tc.expectedPlayer, player)
 		})
 	}
-
-	for i := range players {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
-	}
 }
 
 func TestHandlers_BalanceHandler(t *testing.T) {
@@ -250,7 +250,14 @@ func TestHandlers_BalanceHandler(t *testing.T) {
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
 		require.NoError(t, err)
-		client.Do(req)
+		_, err = client.Do(req)
+		require.NoError(t, err)
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
+			require.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 	}
 	tt := []struct {
 		name           string
@@ -340,12 +347,6 @@ func TestHandlers_BalanceHandler(t *testing.T) {
 			assert.Equal(t, tc.expectedPlayer, player)
 		})
 	}
-
-	for i := range players {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
-	}
 }
 
 func TestHandlers_AnnounceHandler(t *testing.T) {
@@ -412,7 +413,8 @@ func TestHandlers_AnnounceHandler(t *testing.T) {
 	for i := range tournaments {
 		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
 		require.NoError(t, err)
-		client.Do(req)
+		_, err = client.Do(req)
+		require.NoError(t, err)
 	}
 }
 
@@ -433,12 +435,24 @@ func TestHandlers_JoinHandler(t *testing.T) {
 		require.NoError(t, err)
 		_, err = client.Do(req)
 		require.NoError(t, err)
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
+			require.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
 		require.NoError(t, err)
 		_, err = client.Do(req)
 		require.NoError(t, err)
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
+			require.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 	}
 	tt := []struct {
 		name               string
@@ -515,17 +529,6 @@ func TestHandlers_JoinHandler(t *testing.T) {
 			}
 		})
 	}
-
-	for i := range tournaments {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
-	}
-	for i := range players {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
-	}
 }
 
 func TestHandlers_ResultHandler(t *testing.T) {
@@ -545,13 +548,24 @@ func TestHandlers_ResultHandler(t *testing.T) {
 		require.NoError(t, err)
 		_, err = client.Do(req)
 		require.NoError(t, err)
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
+			require.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 	}
 	for i := range players {
 		req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/fund?playerId=%v&points=%v", ts.URL, players[i].ID, players[i].Points), nil)
 		require.NoError(t, err)
 		_, err = client.Do(req)
 		require.NoError(t, err)
-
+		defer func(i int) {
+			req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
+			assert.NoError(t, err)
+			_, err = client.Do(req)
+			require.NoError(t, err)
+		}(i)
 		for j := range tournaments {
 			req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%v/joinTournament?tournamentId=%v&playerId=%v", ts.URL, tournaments[j].ID, players[i].ID), nil)
 			require.NoError(t, err)
@@ -631,16 +645,5 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, tc.expectedJoinError, joinErr)
 		})
-	}
-
-	for i := range tournaments {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deleteTournament?tournamentId=%v", ts.URL, tournaments[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
-	}
-	for i := range players {
-		req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%v/deletePlayer?playerId=%v", ts.URL, players[i].ID), nil)
-		require.NoError(t, err)
-		client.Do(req)
 	}
 }

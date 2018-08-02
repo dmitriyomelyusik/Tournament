@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/dmitriyomelyusik/Tournament/controller"
+	"github.com/dmitriyomelyusik/Tournament/errors"
 	"github.com/dmitriyomelyusik/Tournament/handlers"
 	"github.com/dmitriyomelyusik/Tournament/postgres"
 	_ "github.com/lib/pq"
@@ -27,11 +28,11 @@ func main() {
 	conf := fmt.Sprintf("user=%v dbname=%v password=%v sslmode=%v host=%v", vars[PGUSER], vars[DBNAME], vars[PGPASS], vars[SSLMODE], vars[PGHOST])
 	p, err := postgres.NewDB(conf)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Error{Code: errors.DatabaseCreatingError, Message: "creating database: cannot create database", Info: err.Error()})
 	}
 	err = p.DB.Ping()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Error{Code: errors.DatabasePingError, Message: "ping database: fatal to ping database", Info: err.Error()})
 	}
 	ctl := controller.Game{DB: p}
 	server := handlers.Server{Controller: ctl}
@@ -44,7 +45,7 @@ func main() {
 	}
 	err = s.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal(errors.Error{Code: errors.ConnectionError, Message: "listen and serve: error occured", Info: err.Error()})
 	}
 }
 
