@@ -531,7 +531,7 @@ func TestTournament_GetParticipants(t *testing.T) {
 			name:                 "fail",
 			id:                   "getparts_fake",
 			expectedParticipants: nil,
-			expectedError:        errors.Error(errors.Error{Code: errors.NotFoundError, Message: "get participants: cannot get participants from not existing tournament, id: getparts_fake"}),
+			expectedError:        errors.Error{Code: errors.NotFoundError, Message: "get participants: cannot get participants from not existing tournament, id: getparts_fake"},
 		},
 	}
 
@@ -725,7 +725,7 @@ func TestTournament_GetWinner(t *testing.T) {
 			name:           "fail",
 			id:             "getwinner_fake",
 			expectedWinner: entity.Winners{},
-			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "get winner: cannot get winner from not existing tournament, id: getwinner_fake"}),
+			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "get winner: cannot get winner from not existing tournament, id: getwinner_fake"},
 		},
 	}
 
@@ -796,7 +796,7 @@ func TestTournament_SetWinner(t *testing.T) {
 			id:             "setwinner_fake",
 			winner:         entity.Winner{},
 			expectedWinner: entity.Winners{},
-			expectedError:  errors.Error(errors.Error{Code: errors.NotFoundError, Message: "set winner: tournament not exist, id: setwinner_fake\nsql: no rows in result set"}),
+			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "set winner: tournament not exist, id: setwinner_fake\nsql: no rows in result set"},
 		},
 	}
 

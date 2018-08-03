@@ -164,19 +164,3 @@ func chooseWinner(g Game, tourID string) (entity.Winner, error) {
 	}
 	return entity.Winner{ID: win.ID, Points: win.Points}, nil
 }
-
-// DeletePlayer controls deleting player
-func (g Game) DeletePlayer(playerID string) error {
-	if playerID == "" {
-		return errors.Error{Code: errors.NotFoundError, Message: "delete player: cannot delete player with empty id"}
-	}
-	return g.DB.DeletePlayer(playerID)
-}
-
-// DeleteTournament controls deleting tournament
-func (g Game) DeleteTournament(tourID string) error {
-	if tourID == "" {
-		return errors.Error{Code: errors.NotFoundError, Message: "delete tournament: cannot delete tournament with empty id"}
-	}
-	return g.DB.DeleteTournament(tourID)
-}

@@ -7,15 +7,23 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dmitriyomelyusik/Tournament/controller"
 	"github.com/dmitriyomelyusik/Tournament/entity"
 	"github.com/dmitriyomelyusik/Tournament/errors"
 	"github.com/gorilla/mux"
 )
 
+type ctlr interface {
+	Fund(id string, points int) (entity.Player, error)
+	Take(id string, points int) error
+	Balance(id string) (entity.Player, error)
+	AnnounceTournament(id string, deposit int) error
+	JoinTournament(tourID, playerID string) error
+	Results(tourID string) (entity.Winners, error)
+}
+
 // Server uses controller in handling http methods
 type Server struct {
-	Controller controller.Game
+	Controller ctlr
 }
 
 // HandleFund handles fund query
@@ -119,30 +127,6 @@ func (s Server) HandleResults() http.HandlerFunc {
 	}
 }
 
-// HandleDeleteTour handles deleting tournament
-func (s Server) HandleDeleteTour() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		tourID := r.URL.Query().Get("tournamentId")
-		err := s.Controller.DeleteTournament(tourID)
-		if err != nil {
-			jsonError(w, err)
-			return
-		}
-	}
-}
-
-// HandleDeletePlayer handles deleting tournament
-func (s Server) HandleDeletePlayer() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		tourID := r.URL.Query().Get("playerId")
-		err := s.Controller.DeletePlayer(tourID)
-		if err != nil {
-			jsonError(w, err)
-			return
-		}
-	}
-}
-
 // NewRouter returns router with configurated and handled pathes
 func NewRouter(s Server) *mux.Router {
 	r := mux.NewRouter()
@@ -152,8 +136,8 @@ func NewRouter(s Server) *mux.Router {
 	r.HandleFunc("/announceTournament", s.HandleAnnounce())
 	r.HandleFunc("/joinTournament", s.HandleJoin())
 	r.HandleFunc("/resultTournament", s.HandleResults())
-	r.HandleFunc("/deleteTournament", s.HandleDeleteTour())
-	r.HandleFunc("/deletePlayer", s.HandleDeletePlayer())
+	//	r.HandleFunc("/deleteTournament", s.HandleDeleteTour())
+	//	r.HandleFunc("/deletePlayer", s.HandleDeletePlayer())
 	return r
 }
 
@@ -181,6 +165,7 @@ func jsonResponse(w http.ResponseWriter, data interface{}, status int) {
 	w.WriteHeader(status)
 	w.Header().Set("content-type", "application/json")
 	encoder := json.NewEncoder(w)
+	encoder.Encode(data)
 	if err := encoder.Encode(data); err != nil {
 		log.Println(err)
 	}
