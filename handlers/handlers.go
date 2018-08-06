@@ -57,7 +57,7 @@ func (s Server) HandleTake() http.HandlerFunc {
 		points := query.Get("points")
 		p, err := strconv.Atoi(points)
 		if err != nil {
-			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot fund player, points is not number: " + points, Info: err.Error()})
+			jsonError(w, errors.Error{Code: errors.NotNumberError, Message: "cannot take points, points is not number: " + points, Info: err.Error()})
 			return
 		}
 		err = s.Controller.Take(id, p)
@@ -136,8 +136,6 @@ func NewRouter(s Server) *mux.Router {
 	r.HandleFunc("/announceTournament", s.HandleAnnounce())
 	r.HandleFunc("/joinTournament", s.HandleJoin())
 	r.HandleFunc("/resultTournament", s.HandleResults())
-	//	r.HandleFunc("/deleteTournament", s.HandleDeleteTour())
-	//	r.HandleFunc("/deletePlayer", s.HandleDeletePlayer())
 	return r
 }
 

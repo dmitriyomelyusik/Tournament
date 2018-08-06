@@ -284,3 +284,122 @@ func TestController_Join(t *testing.T) {
 		})
 	}
 }
+
+func TestController_Result(t *testing.T) {
+	players := []entity.Player{
+		{ID: "result_ok", Points: 100},
+		{ID: "result_not_existing", Points: 0},
+	}
+	winners := []entity.Winner{
+		{ID: "result_ok", Points: 100},
+	}
+	tournaments := []entity.Tournament{
+		{ID: "result_ok", Deposit: 100, IsOpen: true, Participants: []string{players[0].ID}, Prize: 100},
+		{ID: "result_closed_tournament", Deposit: 50, IsOpen: false},
+		{ID: "result_not_found", Deposit: 50, IsOpen: false},
+		{ID: "result_failed_to_close", Deposit: 50, IsOpen: true},
+		{ID: "result_failed_to_get_participants", Deposit: 50, IsOpen: true},
+		{ID: "result_empty_participants", Deposit: 50, IsOpen: true},
+		{ID: "result_not_existing_player", Deposit: 50, IsOpen: true, Participants: []string{players[1].ID}},
+		{ID: "result_failed_to_set_winner", Deposit: 50, IsOpen: true, Participants: []string{players[0].ID}},
+	}
+	db.On("GetTournamentState", tournaments[0].ID).Return(tournaments[0].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[1].ID).Return(tournaments[1].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[2].ID).Return(false, errors.Error{Code: errors.NotFoundError})
+	db.On("GetTournamentState", tournaments[3].ID).Return(tournaments[3].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[4].ID).Return(tournaments[4].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[5].ID).Return(tournaments[5].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[6].ID).Return(tournaments[6].IsOpen, nil)
+	db.On("GetTournamentState", tournaments[7].ID).Return(tournaments[7].IsOpen, nil)
+
+	db.On("CloseTournament", tournaments[0].ID).Return(nil)
+	db.On("CloseTournament", tournaments[3].ID).Return(errors.Error{Code: errors.NotFoundError})
+	db.On("CloseTournament", tournaments[4].ID).Return(nil)
+	db.On("CloseTournament", tournaments[5].ID).Return(nil)
+	db.On("CloseTournament", tournaments[6].ID).Return(nil)
+	db.On("CloseTournament", tournaments[7].ID).Return(nil)
+
+	db.On("GetParticipants", tournaments[0].ID).Return(tournaments[0].Participants, nil)
+	db.On("GetParticipants", tournaments[4].ID).Return(nil, errors.Error{Code: errors.NotFoundError})
+	db.On("GetParticipants", tournaments[5].ID).Return(nil, nil)
+	db.On("GetParticipants", tournaments[6].ID).Return(tournaments[6].Participants, nil)
+	db.On("GetParticipants", tournaments[7].ID).Return(tournaments[7].Participants, nil)
+
+	db.On("GetPlayer", players[0].ID).Return(players[0], nil)
+	db.On("GetPlayer", players[1].ID).Return(entity.Player{}, errors.Error{Code: errors.NotFoundError})
+
+	db.On("SetTournamentWinner", tournaments[0].ID, winners[0]).Return(nil)
+	db.On("SetTournamentWinner", tournaments[7].ID, winners[0]).Return(errors.Error{Code: errors.NotFoundError})
+
+	db.On("GetWinner", tournaments[0].ID).Return(entity.Winners{Winners: []entity.Winner{winners[0]}}, nil)
+	db.On("GetWinner", tournaments[1].ID).Return(entity.Winners{Winners: []entity.Winner{winners[0]}}, nil)
+
+	tt := []struct {
+		name            string
+		tourID          string
+		expectedWinners entity.Winners
+		expectedError   error
+	}{
+		{
+			name:            "result: ok",
+			tourID:          tournaments[0].ID,
+			expectedWinners: entity.Winners{Winners: []entity.Winner{winners[0]}},
+			expectedError:   nil,
+		},
+		{
+			name:            "result: empty id",
+			tourID:          "",
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError, Message: "results: id must be not nil"},
+		},
+		{
+			name:            "result: closed tournament",
+			tourID:          tournaments[1].ID,
+			expectedWinners: entity.Winners{Winners: []entity.Winner{winners[0]}},
+			expectedError:   nil,
+		},
+		{
+			name:            "result: not found tournament",
+			tourID:          tournaments[2].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError},
+		},
+		{
+			name:            "result: failed to close",
+			tourID:          tournaments[3].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError},
+		},
+		{
+			name:            "result: failed to get participants",
+			tourID:          tournaments[4].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError},
+		},
+		{
+			name:            "result: empty participants",
+			tourID:          tournaments[5].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NoneParticipantsError, Message: "cannot choose winner: tournament has no participants, id: " + tournaments[5].ID},
+		},
+		{
+			name:            "result: not existing player",
+			tourID:          tournaments[6].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError},
+		},
+		{
+			name:            "result: failed to set winner",
+			tourID:          tournaments[7].ID,
+			expectedWinners: entity.Winners{},
+			expectedError:   errors.Error{Code: errors.NotFoundError},
+		},
+	}
+	for _, tc := range tt {
+		t.Run(tc.name, func(t *testing.T) {
+			w, err := g.Results(tc.tourID)
+			assert.Equal(t, tc.expectedWinners, w)
+			assert.Equal(t, tc.expectedError, err)
+		})
+	}
+}

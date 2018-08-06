@@ -14,7 +14,6 @@ type PlayerDB interface {
 	GetPlayer(string) (entity.Player, error)
 	CreatePlayer(string, int) (entity.Player, error)
 	UpdatePlayer(string, int) error
-	DeletePlayer(string) error
 }
 
 // TourDB is an interface for database, that used to controll tournament activity methods
@@ -25,7 +24,6 @@ type TourDB interface {
 	CloseTournament(string) error
 	GetParticipants(string) ([]string, error)
 	SetTournamentWinner(string, entity.Winner) error
-	DeleteTournament(string) error
 }
 
 // Database is an interface for database, that uses tournament and player database interfaces

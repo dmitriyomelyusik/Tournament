@@ -30,9 +30,9 @@ func TestMain(m *testing.M) {
 
 func TestPlayer_CreatePlayer(t *testing.T) {
 	players := []entity.Player{
-		{ID: "createplayer_test1", Points: 200},
-		{ID: "createplayer_test2", Points: 200},
-		{ID: "createplayer_test3", Points: 200},
+		{ID: "createplayer_1", Points: 200},
+		{ID: "createplayer_2", Points: 200},
+		{ID: "createplayer_3", Points: 200},
 	}
 	tt := []struct {
 		name          string
@@ -40,32 +40,32 @@ func TestPlayer_CreatePlayer(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok0",
+			name:          "create player: ok0",
 			player:        players[0],
 			expectedError: nil,
 		},
 		{
-			name:          "ok1",
+			name:          "create player: ok1",
 			player:        players[1],
 			expectedError: nil,
 		},
 		{
-			name:          "duplicate0",
+			name:          "create player: duplicate0",
 			player:        players[0],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[0].ID},
 		},
 		{
-			name:          "ok2",
+			name:          "create player: ok2",
 			player:        players[2],
 			expectedError: nil,
 		},
 		{
-			name:          "duplicate1",
+			name:          "create player: duplicate1",
 			player:        players[1],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[1].ID},
 		},
 		{
-			name:          "duplicate2",
+			name:          "create player: duplicate2",
 			player:        players[2],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + players[2].ID},
 		},
@@ -88,9 +88,9 @@ func TestPlayer_CreatePlayer(t *testing.T) {
 
 func TestPlayer_GetPlayer(t *testing.T) {
 	players := []entity.Player{
-		{ID: "createplayer_test1", Points: 200},
-		{ID: "createplayer_test2", Points: 200},
-		{ID: "createplayer_test3", Points: 200},
+		{ID: "getplayer_1", Points: 200},
+		{ID: "getplayer_2", Points: 200},
+		{ID: "getplayer_3", Points: 200},
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
@@ -107,25 +107,25 @@ func TestPlayer_GetPlayer(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			name:           "ok0",
+			name:           "get player: ok0",
 			id:             players[0].ID,
 			expectedPlayer: players[0],
 			expectedError:  nil,
 		},
 		{
-			name:           "ok1",
+			name:           "get player: ok1",
 			id:             players[1].ID,
 			expectedPlayer: players[1],
 			expectedError:  nil,
 		},
 		{
-			name:           "ok2",
+			name:           "get player: ok2",
 			id:             players[2].ID,
 			expectedPlayer: players[2],
 			expectedError:  nil,
 		},
 		{
-			name:           "not existing player",
+			name:           "get player: not existing player",
 			id:             "getplayer_fake",
 			expectedPlayer: entity.Player{},
 			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "get player: cannot find player, id getplayer_fake"},
@@ -143,9 +143,9 @@ func TestPlayer_GetPlayer(t *testing.T) {
 
 func TestPlayer_UpdatePlayer(t *testing.T) {
 	players := []entity.Player{
-		{ID: "updateplayer_test1", Points: 200},
-		{ID: "updateplayer_test2", Points: 200},
-		{ID: "updateplayer_test3", Points: 200},
+		{ID: "updateplayer_1", Points: 200},
+		{ID: "updateplayer_2", Points: 200},
+		{ID: "updateplayer_3", Points: 200},
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
@@ -162,61 +162,61 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok_fund0",
+			name:          "update player: ok fund0",
 			id:            players[0].ID,
 			dif:           200,
 			expectedError: nil,
 		},
 		{
-			name:          "ok_fund1",
+			name:          "update player: okfund1",
 			id:            players[1].ID,
 			dif:           200,
 			expectedError: nil,
 		},
 		{
-			name:          "ok_fund2",
+			name:          "update player: ok fund2",
 			id:            players[2].ID,
 			dif:           200,
 			expectedError: nil,
 		},
 		{
-			name:          "not existing player",
+			name:          "update player: not existing player",
 			id:            "getplayer_fake",
 			dif:           200,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "update player: cannot find player, id getplayer_fake"},
 		},
 		{
-			name:          "ok_take0",
+			name:          "update player: ok take0",
 			id:            players[0].ID,
 			dif:           -100,
 			expectedError: nil,
 		},
 		{
-			name:          "ok_take1",
+			name:          "update player: ok take1",
 			id:            players[1].ID,
 			dif:           -100,
 			expectedError: nil,
 		},
 		{
-			name:          "ok_take2",
+			name:          "update player: ok take2",
 			id:            players[2].ID,
 			dif:           -100,
 			expectedError: nil,
 		},
 		{
-			name:          "err_take0",
+			name:          "update player: err take0",
 			id:            players[0].ID,
 			dif:           -500,
 			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -500"},
 		},
 		{
-			name:          "err_take1",
+			name:          "update player: err take1",
 			id:            players[1].ID,
 			dif:           -600,
 			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -600"},
 		},
 		{
-			name:          "err_take2",
+			name:          "update player: err take2",
 			id:            players[2].ID,
 			dif:           -700,
 			expectedError: errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif -700"},
@@ -233,9 +233,9 @@ func TestPlayer_UpdatePlayer(t *testing.T) {
 
 func TestPlayer_DeletePlayer(t *testing.T) {
 	players := []entity.Player{
-		{ID: "deleteplayer_test1", Points: 200},
-		{ID: "deleteplayer_test2", Points: 200},
-		{ID: "deleteplayer_test3", Points: 200},
+		{ID: "deleteplayer_1", Points: 200},
+		{ID: "deleteplayer_2", Points: 200},
+		{ID: "deleteplayer_3", Points: 200},
 	}
 	for i := range players {
 		_, err := p.CreatePlayer(players[i].ID, players[i].Points)
@@ -247,37 +247,37 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok0",
+			name:          "delete player: ok0",
 			id:            players[0].ID,
 			expectedError: nil,
 		},
 		{
-			name:          "already deleted",
+			name:          "delete player: already deleted",
 			id:            players[0].ID,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[0].ID},
 		},
 		{
-			name:          "ok1",
+			name:          "delete player: ok1",
 			id:            players[1].ID,
 			expectedError: nil,
 		},
 		{
-			name:          "ok2",
+			name:          "delete player: ok2",
 			id:            players[2].ID,
 			expectedError: nil,
 		},
 		{
-			name:          "already deleted",
+			name:          "delete player: already deleted",
 			id:            players[1].ID,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[1].ID},
 		},
 		{
-			name:          "wasn't exist",
+			name:          "delete player: wasn't exist",
 			id:            "deleteplayer_fake",
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id deleteplayer_fake"},
 		},
 		{
-			name:          "already deleted",
+			name:          "delete player: already deleted",
 			id:            players[2].ID,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete player: player does not exist, id " + players[2].ID},
 		},
@@ -297,9 +297,9 @@ func TestPlayer_DeletePlayer(t *testing.T) {
 
 func TestTournament_CreateTournament(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "createtournament_test1", Deposit: 100},
-		{ID: "createtournament_test2", Deposit: 100},
-		{ID: "createtournament_test3", Deposit: 100},
+		{ID: "createtournament_1", Deposit: 100},
+		{ID: "createtournament_2", Deposit: 100},
+		{ID: "createtournament_3", Deposit: 100},
 	}
 	tt := []struct {
 		name          string
@@ -307,32 +307,32 @@ func TestTournament_CreateTournament(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok0",
+			name:          "create tournament: ok0",
 			tournament:    tournaments[0],
 			expectedError: nil,
 		},
 		{
-			name:          "ok1",
+			name:          "create tournament: ok1",
 			tournament:    tournaments[1],
 			expectedError: nil,
 		},
 		{
-			name:          "duplicated id 0",
+			name:          "create tournament: duplicated id 0",
 			tournament:    tournaments[0],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[0].ID},
 		},
 		{
-			name:          "ok2",
+			name:          "create tournament: ok2",
 			tournament:    tournaments[2],
 			expectedError: nil,
 		},
 		{
-			name:          "duplicated id 1",
+			name:          "create tournament: duplicated id 1",
 			tournament:    tournaments[1],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[1].ID},
 		},
 		{
-			name:          "duplicated id 2",
+			name:          "create tournament: duplicated id 2",
 			tournament:    tournaments[2],
 			expectedError: errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + tournaments[2].ID},
 		},
@@ -352,9 +352,9 @@ func TestTournament_CreateTournament(t *testing.T) {
 
 func TestTournament_DeleteTournament(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "deletetournament_test1", Deposit: 100},
-		{ID: "deletetournament_test2", Deposit: 100},
-		{ID: "deletetournament_test3", Deposit: 100},
+		{ID: "deletetournament_1", Deposit: 100},
+		{ID: "deletetournament_2", Deposit: 100},
+		{ID: "deletetournament_3", Deposit: 100},
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
@@ -366,27 +366,27 @@ func TestTournament_DeleteTournament(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok0",
+			name:          "delete tournament: ok0",
 			id:            tournaments[0].ID,
 			expectedError: nil,
 		},
 		{
-			name:          "already deleted",
+			name:          "delete tournament: already deleted",
 			id:            tournaments[0].ID,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete tournament: tournament does not exist, id " + tournaments[0].ID},
 		},
 		{
-			name:          "ok1",
+			name:          "delete tournament: ok1",
 			id:            tournaments[1].ID,
 			expectedError: nil,
 		},
 		{
-			name:          "fake id",
+			name:          "delete tournament: fake id",
 			id:            "deletetournaments_fake",
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "delete tournament: tournament does not exist, id deletetournaments_fake"},
 		},
 		{
-			name:          "ok2",
+			name:          "delete tournament: ok2",
 			id:            tournaments[2].ID,
 			expectedError: nil,
 		},
@@ -406,9 +406,9 @@ func TestTournament_DeleteTournament(t *testing.T) {
 
 func TestTournament_CloseTournament(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "closetournament_test1", Deposit: 100},
-		{ID: "closetournament_test2", Deposit: 100},
-		{ID: "closetournament_test3", Deposit: 100},
+		{ID: "closetournament_1", Deposit: 100},
+		{ID: "closetournament_2", Deposit: 100},
+		{ID: "closetournament_3", Deposit: 100},
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
@@ -425,28 +425,28 @@ func TestTournament_CloseTournament(t *testing.T) {
 		expectedError      error
 	}{
 		{
-			name:               "ok0",
+			name:               "close tournament: ok0",
 			id:                 tournaments[0].ID,
 			expectedState:      false,
 			expectedStateError: nil,
 			expectedError:      nil,
 		},
 		{
-			name:               "ok1",
+			name:               "close tournament: ok1",
 			id:                 tournaments[1].ID,
 			expectedState:      false,
 			expectedStateError: nil,
 			expectedError:      nil,
 		},
 		{
-			name:               "ok2",
+			name:               "close tournament: ok2",
 			id:                 tournaments[2].ID,
 			expectedState:      false,
 			expectedStateError: nil,
 			expectedError:      nil,
 		},
 		{
-			name:               "fake id",
+			name:               "close tournament: fake id",
 			id:                 "closetournaments_fake",
 			expectedState:      false,
 			expectedStateError: errors.Error{Code: errors.NotFoundError, Message: "get state: cannot get tournament state from not existing tournament, id: closetournaments_fake"},
@@ -467,17 +467,17 @@ func TestTournament_CloseTournament(t *testing.T) {
 
 func TestTournament_GetParticipants(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "getparticipants_test1", Deposit: 100},
-		{ID: "getparticipants_test2", Deposit: 100},
-		{ID: "getparticipants_test3", Deposit: 100},
+		{ID: "getparticipants_1", Deposit: 100},
+		{ID: "getparticipants_2", Deposit: 100},
+		{ID: "getparticipants_3", Deposit: 100},
 	}
 	players := []entity.Player{
-		{ID: "getpart_test1", Points: 200},
-		{ID: "getpart_test2", Points: 200},
-		{ID: "getpart_test3", Points: 200},
-		{ID: "getpart_test4", Points: 50},
-		{ID: "getpart_test5", Points: 50},
-		{ID: "getpart_test6", Points: 50},
+		{ID: "getpart_1", Points: 200},
+		{ID: "getpart_2", Points: 200},
+		{ID: "getpart_3", Points: 200},
+		{ID: "getpart_4", Points: 50},
+		{ID: "getpart_5", Points: 50},
+		{ID: "getpart_6", Points: 50},
 	}
 	expParticipants := [][]string{nil, nil, nil}
 	for i := range tournaments {
@@ -510,25 +510,25 @@ func TestTournament_GetParticipants(t *testing.T) {
 		expectedError        error
 	}{
 		{
-			name:                 "ok0",
+			name:                 "get participants: ok0",
 			id:                   tournaments[0].ID,
 			expectedParticipants: expParticipants[0],
 			expectedError:        nil,
 		},
 		{
-			name:                 "ok1",
+			name:                 "get participants: ok1",
 			id:                   tournaments[1].ID,
 			expectedParticipants: expParticipants[1],
 			expectedError:        nil,
 		},
 		{
-			name:                 "ok2",
+			name:                 "get participants: ok2",
 			id:                   tournaments[2].ID,
 			expectedParticipants: expParticipants[2],
 			expectedError:        nil,
 		},
 		{
-			name:                 "fail",
+			name:                 "get participants: fail",
 			id:                   "getparts_fake",
 			expectedParticipants: nil,
 			expectedError:        errors.Error{Code: errors.NotFoundError, Message: "get participants: cannot get participants from not existing tournament, id: getparts_fake"},
@@ -546,9 +546,9 @@ func TestTournament_GetParticipants(t *testing.T) {
 
 func TestTournament_GetDeposit(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "getdeposit_test1", Deposit: 100},
-		{ID: "getdeposit_test2", Deposit: 200},
-		{ID: "getdeposit_test3", Deposit: 300},
+		{ID: "getdeposit_1", Deposit: 100},
+		{ID: "getdeposit_2", Deposit: 200},
+		{ID: "getdeposit_3", Deposit: 300},
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
@@ -564,25 +564,25 @@ func TestTournament_GetDeposit(t *testing.T) {
 		expectedError   error
 	}{
 		{
-			name:            "ok0",
+			name:            "get deposit: ok0",
 			id:              tournaments[0].ID,
 			expectedDeposit: tournaments[0].Deposit,
 			expectedError:   nil,
 		},
 		{
-			name:            "ok1",
+			name:            "get deposit: ok1",
 			id:              tournaments[1].ID,
 			expectedDeposit: tournaments[1].Deposit,
 			expectedError:   nil,
 		},
 		{
-			name:            "ok2",
+			name:            "get deposit: ok2",
 			id:              tournaments[2].ID,
 			expectedDeposit: tournaments[2].Deposit,
 			expectedError:   nil,
 		},
 		{
-			name:            "fake id",
+			name:            "get deposit: fake id",
 			id:              "getdeposit_fake",
 			expectedDeposit: 0,
 			expectedError:   errors.Error{Code: errors.NotFoundError, Message: "get deposit: cannot get deposit from not existing tournament, id: getdeposit_fake"},
@@ -600,9 +600,9 @@ func TestTournament_GetDeposit(t *testing.T) {
 
 func TestTournament_GetState(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "getstate_test1", Deposit: 100},
-		{ID: "getstate_test2", Deposit: 200},
-		{ID: "getstate_test3", Deposit: 300},
+		{ID: "getstate_1", Deposit: 100},
+		{ID: "getstate_2", Deposit: 200},
+		{ID: "getstate_3", Deposit: 300},
 	}
 	states := []bool{}
 	rand.Seed(time.Now().UnixNano())
@@ -627,25 +627,25 @@ func TestTournament_GetState(t *testing.T) {
 		expectedError error
 	}{
 		{
-			name:          "ok0",
+			name:          "get state: ok0",
 			id:            tournaments[0].ID,
 			expectedState: states[0],
 			expectedError: nil,
 		},
 		{
-			name:          "ok1",
+			name:          "get state: ok1",
 			id:            tournaments[1].ID,
 			expectedState: states[1],
 			expectedError: nil,
 		},
 		{
-			name:          "ok2",
+			name:          "get state: ok2",
 			id:            tournaments[2].ID,
 			expectedState: states[2],
 			expectedError: nil,
 		},
 		{
-			name:          "fake id",
+			name:          "get state: fake id",
 			id:            "getstate_fake",
 			expectedState: false,
 			expectedError: errors.Error{Code: errors.NotFoundError, Message: "get state: cannot get tournament state from not existing tournament, id: getstate_fake"},
@@ -663,17 +663,17 @@ func TestTournament_GetState(t *testing.T) {
 
 func TestTournament_GetWinner(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "getwinner_test1", Deposit: 100},
-		{ID: "getwinner_test2", Deposit: 100},
-		{ID: "getwinner_test3", Deposit: 100},
+		{ID: "getwinner_1", Deposit: 100},
+		{ID: "getwinner_2", Deposit: 100},
+		{ID: "getwinner_3", Deposit: 100},
 	}
 	winners := []entity.Winner{
-		{ID: "getwinner_test1", Points: 50},
-		{ID: "getwinner_test2", Points: 200},
-		{ID: "getwinner_test3", Points: 200},
-		{ID: "getwinner_test4", Points: 50},
-		{ID: "getwinner_test5", Points: 200},
-		{ID: "getwinner_test6", Points: 50},
+		{ID: "getwinner_1", Points: 50},
+		{ID: "getwinner_2", Points: 200},
+		{ID: "getwinner_3", Points: 200},
+		{ID: "getwinner_4", Points: 50},
+		{ID: "getwinner_5", Points: 200},
+		{ID: "getwinner_6", Points: 50},
 	}
 	var expWinner []entity.Winner
 	for i := range tournaments {
@@ -704,25 +704,25 @@ func TestTournament_GetWinner(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			name:           "ok0",
+			name:           "get winner: ok0",
 			id:             tournaments[0].ID,
 			expectedWinner: entity.Winners{Winners: []entity.Winner{expWinner[0]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "ok1",
+			name:           "get winner: ok1",
 			id:             tournaments[1].ID,
 			expectedWinner: entity.Winners{Winners: []entity.Winner{expWinner[1]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "ok2",
+			name:           "get winner: ok2",
 			id:             tournaments[2].ID,
 			expectedWinner: entity.Winners{Winners: []entity.Winner{expWinner[2]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "fail",
+			name:           "get winner: fail",
 			id:             "getwinner_fake",
 			expectedWinner: entity.Winners{},
 			expectedError:  errors.Error{Code: errors.NotFoundError, Message: "get winner: cannot get winner from not existing tournament, id: getwinner_fake"},
@@ -740,14 +740,14 @@ func TestTournament_GetWinner(t *testing.T) {
 
 func TestTournament_SetWinner(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "setwinner_test1", Deposit: 100},
-		{ID: "setwinner_test2", Deposit: 100},
-		{ID: "setwinner_test3", Deposit: 100},
+		{ID: "setwinner_1", Deposit: 100},
+		{ID: "setwinner_2", Deposit: 100},
+		{ID: "setwinner_3", Deposit: 100},
 	}
 	winners := []entity.Winner{
-		{ID: "setwinner_test1", Points: 50},
-		{ID: "setwinner_test2", Points: 200},
-		{ID: "setwinner_test3", Points: 200},
+		{ID: "setwinner_1", Points: 50},
+		{ID: "setwinner_2", Points: 200},
+		{ID: "setwinner_3", Points: 200},
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
@@ -771,28 +771,28 @@ func TestTournament_SetWinner(t *testing.T) {
 		expectedError  error
 	}{
 		{
-			name:           "ok0",
+			name:           "set winner: ok0",
 			id:             tournaments[0].ID,
 			winner:         winners[0],
 			expectedWinner: entity.Winners{Winners: []entity.Winner{winners[0]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "ok1",
+			name:           "set winner: ok1",
 			id:             tournaments[1].ID,
 			winner:         winners[1],
 			expectedWinner: entity.Winners{Winners: []entity.Winner{winners[1]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "ok2",
+			name:           "set winner: ok2",
 			id:             tournaments[2].ID,
 			winner:         winners[2],
 			expectedWinner: entity.Winners{Winners: []entity.Winner{winners[2]}},
 			expectedError:  nil,
 		},
 		{
-			name:           "fail",
+			name:           "set winner: fail",
 			id:             "setwinner_fake",
 			winner:         entity.Winner{},
 			expectedWinner: entity.Winners{},
@@ -815,14 +815,14 @@ func TestTournament_SetWinner(t *testing.T) {
 
 func TestGama_UpdateTourAndPlayer(t *testing.T) {
 	tournaments := []entity.Tournament{
-		{ID: "updategame_test1", Deposit: 50},
-		{ID: "updategame_test2", Deposit: 50},
-		{ID: "updategame_test3", Deposit: 50},
+		{ID: "updategame_1", Deposit: 50},
+		{ID: "updategame_2", Deposit: 50},
+		{ID: "updategame_3", Deposit: 50},
 	}
 	players := []entity.Player{
-		{ID: "updategame_test1", Points: 50},
-		{ID: "updategame_test2", Points: 100},
-		{ID: "updategame_test3", Points: 150},
+		{ID: "updategame_1", Points: 50},
+		{ID: "updategame_2", Points: 100},
+		{ID: "updategame_3", Points: 150},
 	}
 	for i := range tournaments {
 		err := p.CreateTournament(tournaments[i].ID, tournaments[i].Deposit)
@@ -849,7 +849,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 		expectedGetPlayError []error
 	}{
 		{
-			name:                 "tour 1",
+			name:                 "update tournament and player: tour 1",
 			id:                   tournaments[0].ID,
 			participants:         players,
 			expectedPoints:       []int{0, 50, 100},
@@ -859,7 +859,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
 		{
-			name:                 "tour 2",
+			name:                 "update tournament and player: tour 2",
 			id:                   tournaments[1].ID,
 			participants:         players,
 			expectedPoints:       []int{0, 0, 50},
@@ -869,7 +869,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
 		{
-			name:                 "tour 3",
+			name:                 "update tournament and player: tour 3",
 			id:                   tournaments[2].ID,
 			participants:         players,
 			expectedPoints:       []int{0, 0, 0},
@@ -879,7 +879,7 @@ func TestGama_UpdateTourAndPlayer(t *testing.T) {
 			expectedGetPlayError: []error{nil, nil, nil},
 		},
 		{
-			name:                 "fake tour",
+			name:                 "update tournament and player: fake tour",
 			id:                   "updatingfaketour",
 			participants:         players,
 			expectedPoints:       []int{0, 0, 0},
