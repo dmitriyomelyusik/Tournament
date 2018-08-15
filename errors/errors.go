@@ -7,9 +7,9 @@ import (
 
 // Error is the custom made error for convinient handling errors
 type Error struct {
-	Code    ErrCode     `json:"code,omitempty"`
-	Message string      `json:"message,omitempty"`
-	Info    interface{} `json:"info,omitempty"`
+	Code    ErrCode     `json:"code"`
+	Message string      `json:"message"`
+	Info    interface{} `json:"info"`
 }
 
 // ErrCode is the code, that used to concritizate error info
@@ -17,6 +17,8 @@ type ErrCode string
 
 // Here are all of usable errCodes. Do not delete them!
 const (
+	RollbackError             ErrCode = "rollbackError"
+	CriticalError             ErrCode = "criticalError"
 	NotFoundError             ErrCode = "notFoundError"
 	DuplicatedIDError         ErrCode = "duplicatedIDError"
 	NegativePointsNumberError ErrCode = "negativePointsNumberError"

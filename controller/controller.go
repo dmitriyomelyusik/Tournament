@@ -11,19 +11,19 @@ import (
 
 // PlayerDB is an interface for database, that used to controll player activity methods
 type PlayerDB interface {
-	GetPlayer(string) (entity.Player, error)
-	CreatePlayer(string, int) (entity.Player, error)
-	UpdatePlayer(string, int) error
+	GetPlayer(id string) (entity.Player, error)
+	CreatePlayer(id string, points int) (entity.Player, error)
+	UpdatePlayer(id string, dif int) error
 }
 
 // TourDB is an interface for database, that used to controll tournament activity methods
 type TourDB interface {
-	CreateTournament(string, int) error
-	GetTournamentState(string) (bool, error)
-	GetWinner(string) (entity.Winners, error)
-	CloseTournament(string) error
-	GetParticipants(string) ([]string, error)
-	SetTournamentWinner(string, entity.Winner) error
+	CreateTournament(id string, deposit int) error
+	GetTournamentState(id string) (bool, error)
+	GetWinner(id string) (entity.Winners, error)
+	CloseTournament(id string) error
+	GetParticipants(id string) ([]string, error)
+	SetTournamentWinner(id string, winner entity.Winner) error
 }
 
 // Database is an interface for database, that uses tournament and player database interfaces
@@ -31,7 +31,7 @@ type TourDB interface {
 type Database interface {
 	PlayerDB
 	TourDB
-	UpdateTourAndPlayer(string, string) error
+	UpdateTourAndPlayer(tourID string, playerID string) error
 }
 
 // Game is a struct which methods controlls activity within database interface

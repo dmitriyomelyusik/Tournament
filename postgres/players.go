@@ -10,7 +10,7 @@ import (
 
 // CreatePlayer creates new player with id and points
 func (p *Postgres) CreatePlayer(id string, points int) (entity.Player, error) {
-	res, err := p.DB.Exec("INSERT INTO players (id, points) values ($1, $2)", id, points)
+	res, err := p.db.Exec("INSERT INTO players (id, points) values ($1, $2)", id, points)
 	if err != nil {
 		return entity.Player{}, errors.Error{Code: errors.DuplicatedIDError, Message: "create player: using duplicated id to create player, id " + id}
 	}
@@ -23,7 +23,7 @@ func (p *Postgres) CreatePlayer(id string, points int) (entity.Player, error) {
 
 // GetPlayer returns player by its id
 func (p *Postgres) GetPlayer(id string) (entity.Player, error) {
-	row := p.DB.QueryRow("SELECT points FROM players WHERE id=$1", id)
+	row := p.db.QueryRow("SELECT points FROM players WHERE id=$1", id)
 	var points int
 	err := row.Scan(&points)
 	if err != nil {
@@ -34,7 +34,7 @@ func (p *Postgres) GetPlayer(id string) (entity.Player, error) {
 
 // UpdatePlayer updates player points
 func (p *Postgres) UpdatePlayer(id string, dif int) error {
-	res, err := p.DB.Exec("UPDATE players SET points=points+$1 WHERE id=$2", dif, id)
+	res, err := p.db.Exec("UPDATE players SET points=points+$1 WHERE id=$2", dif, id)
 	if err != nil {
 		return errors.Error{Code: errors.NegativePointsNumberError, Message: "update player: cannot update points numbers, dif " + strconv.Itoa(dif)}
 	}
@@ -51,7 +51,7 @@ func updateTxPlayer(tx *sql.Tx, id string, dif int) error {
 
 // DeletePlayer deletes player from database
 func (p *Postgres) DeletePlayer(id string) error {
-	res, err := p.DB.Exec("DELETE FROM players WHERE id=$1", id)
+	res, err := p.db.Exec("DELETE FROM players WHERE id=$1", id)
 	if err != nil {
 		return errors.Error{Code: errors.UnexpectedError, Message: "delete player: " + err.Error()}
 	}

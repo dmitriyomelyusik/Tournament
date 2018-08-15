@@ -591,7 +591,7 @@ func TestTournament_GetDeposit(t *testing.T) {
 
 	for _, tc := range tt {
 		t.Run(tc.name, func(t *testing.T) {
-			dep, err := p.GetDeposit(tc.id)
+			dep, err := p.getDeposit(tc.id)
 			assert.Equal(t, tc.expectedError, err)
 			assert.Equal(t, tc.expectedDeposit, dep)
 		})

@@ -163,7 +163,6 @@ func jsonResponse(w http.ResponseWriter, data interface{}, status int) {
 	w.WriteHeader(status)
 	w.Header().Set("content-type", "application/json")
 	encoder := json.NewEncoder(w)
-	encoder.Encode(data)
 	if err := encoder.Encode(data); err != nil {
 		log.Println(err)
 	}

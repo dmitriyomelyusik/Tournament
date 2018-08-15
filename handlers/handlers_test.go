@@ -194,14 +194,18 @@ func TestHandlers_BalanceHandler(t *testing.T) {
 			assert.Equal(t, tc.err, err)
 			assert.Equal(t, tc.expectedStatus, res.StatusCode)
 			decoder := json.NewDecoder(res.Body)
-			var player entity.Player
-			err = decoder.Decode(&player)
-			assert.Equal(t, tc.err, err)
-			assert.Equal(t, tc.expectedPlayer, player)
-			var expErr errors.Error
-			err = decoder.Decode(&expErr)
-			assert.Equal(t, tc.err, err)
-			assert.Equal(t, tc.expectedError, expErr)
+			if tc.expectedPlayer != (entity.Player{}) {
+				var player entity.Player
+				err = decoder.Decode(&player)
+				assert.Equal(t, tc.err, err)
+				assert.Equal(t, tc.expectedPlayer, player)
+			}
+			if tc.expectedError != (errors.Error{}) {
+				var expErr errors.Error
+				err = decoder.Decode(&expErr)
+				assert.Equal(t, tc.err, err)
+				assert.Equal(t, tc.expectedError, expErr)
+			}
 		})
 	}
 }
@@ -359,14 +363,18 @@ func TestHandlers_ResultHandler(t *testing.T) {
 			assert.Equal(t, tc.err, err)
 			assert.Equal(t, tc.expectedStatus, res.StatusCode)
 			decoder := json.NewDecoder(res.Body)
-			var winner entity.Winners
-			err = decoder.Decode(&winner)
-			assert.Equal(t, tc.err, err)
-			assert.Equal(t, tc.expectedWinners, winner)
-			var expErr errors.Error
-			err = decoder.Decode(&expErr)
-			assert.Equal(t, tc.err, err)
-			assert.Equal(t, tc.expectedError, expErr)
+			if tc.expectedWinners.Winners != nil {
+				var winner entity.Winners
+				err = decoder.Decode(&winner)
+				assert.Equal(t, tc.err, err)
+				assert.Equal(t, tc.expectedWinners, winner)
+			}
+			if tc.expectedError != (errors.Error{}) {
+				var expErr errors.Error
+				err = decoder.Decode(&expErr)
+				assert.Equal(t, tc.err, err)
+				assert.Equal(t, tc.expectedError, expErr)
+			}
 		})
 	}
 }

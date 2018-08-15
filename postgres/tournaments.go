@@ -12,7 +12,7 @@ import (
 
 // CloseTournament closes tournament in transaction
 func (p *Postgres) CloseTournament(id string) error {
-	res, err := p.DB.Exec("UPDATE tournaments SET isOpen='false' WHERE id=$1", id)
+	res, err := p.db.Exec("UPDATE tournaments SET isOpen='false' WHERE id=$1", id)
 	if err != nil {
 		return err
 	}
@@ -21,7 +21,7 @@ func (p *Postgres) CloseTournament(id string) error {
 
 // CreateTournament creates tournament with id and deposit
 func (p *Postgres) CreateTournament(id string, deposit int) error {
-	res, err := p.DB.Exec("INSERT INTO tournaments (id, deposit, prize, isOpen) values ($1, $2, '0', 'true')", id, deposit)
+	res, err := p.db.Exec("INSERT INTO tournaments (id, deposit, prize, isOpen) values ($1, $2, '0', 'true')", id, deposit)
 	if err != nil {
 		return errors.Error{Code: errors.DuplicatedIDError, Message: "create tournament: using duplicated id to create tournament, id: " + id}
 	}
@@ -30,7 +30,7 @@ func (p *Postgres) CreateTournament(id string, deposit int) error {
 
 // GetParticipants returns tournament participants
 func (p *Postgres) GetParticipants(id string) ([]string, error) {
-	row := p.DB.QueryRow("SELECT participants FROM tournaments WHERE id=$1", id)
+	row := p.db.QueryRow("SELECT participants FROM tournaments WHERE id=$1", id)
 	var playerIDs []string
 	err := row.Scan(pq.Array(&playerIDs))
 	if err != nil {
@@ -41,7 +41,7 @@ func (p *Postgres) GetParticipants(id string) ([]string, error) {
 
 // GetTournamentState returns true, if tournament opens for joining
 func (p *Postgres) GetTournamentState(id string) (bool, error) {
-	row := p.DB.QueryRow("SELECT isOpen FROM tournaments WHERE id=$1", id)
+	row := p.db.QueryRow("SELECT isOpen FROM tournaments WHERE id=$1", id)
 	var isOpen bool
 	err := row.Scan(&isOpen)
 	if err != nil {
@@ -52,7 +52,7 @@ func (p *Postgres) GetTournamentState(id string) (bool, error) {
 
 // GetWinner returns tournament winner
 func (p *Postgres) GetWinner(id string) (entity.Winners, error) {
-	row := p.DB.QueryRow("SELECT winner FROM tournaments WHERE id=$1", id)
+	row := p.db.QueryRow("SELECT winner FROM tournaments WHERE id=$1", id)
 	var rawWinner []byte
 	err := row.Scan(&rawWinner)
 	if err != nil {
@@ -69,9 +69,8 @@ func (p *Postgres) GetWinner(id string) (entity.Winners, error) {
 	return entity.Winners{Winners: []entity.Winner{winner}}, nil
 }
 
-// GetDeposit returns tournament deposit
-func (p *Postgres) GetDeposit(id string) (int, error) {
-	row := p.DB.QueryRow("SELECT deposit FROM tournaments WHERE id=$1", id)
+func (p *Postgres) getDeposit(id string) (int, error) {
+	row := p.db.QueryRow("SELECT deposit FROM tournaments WHERE id=$1", id)
 	var deposit int
 	err := row.Scan(&deposit)
 	if err != nil {
@@ -82,7 +81,7 @@ func (p *Postgres) GetDeposit(id string) (int, error) {
 
 // SetTournamentWinner sets winner in one transaction
 func (p *Postgres) SetTournamentWinner(id string, winner entity.Winner) error {
-	tx, err := p.DB.Begin()
+	tx, err := p.db.Begin()
 	if err != nil {
 		return err
 	}
@@ -127,7 +126,7 @@ func updateTxParticipants(tx *sql.Tx, tourID, playerID string) error {
 
 // DeleteTournament deletes tournament
 func (p *Postgres) DeleteTournament(id string) error {
-	res, err := p.DB.Exec("DELETE FROM tournaments WHERE id=$1", id)
+	res, err := p.db.Exec("DELETE FROM tournaments WHERE id=$1", id)
 	if err != nil {
 		return err
 	}

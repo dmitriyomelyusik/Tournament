@@ -10,7 +10,7 @@ import (
 
 // Postgres is a postgres database
 type Postgres struct {
-	DB *sql.DB
+	db *sql.DB
 }
 
 // NewDB returns postgres database with configuration conf
@@ -19,12 +19,23 @@ func NewDB(conf string) (*Postgres, error) {
 	if err != nil {
 		return nil, errors.Error{Code: errors.DatabaseOpenError, Message: "cannot open database, config: " + conf, Info: err.Error()}
 	}
-	return &Postgres{DB: db}, nil
+	return &Postgres{db: db}, nil
+}
+
+// Close closes database connection
+func (p *Postgres) Close() error {
+	return p.db.Close()
+}
+
+// Ping verifies a connection to the database is still alive,
+// establishing a connection if necessary.
+func (p *Postgres) Ping() error {
+	return p.db.Ping()
 }
 
 // UpdateTourAndPlayer updates tournament participants and player balance in one transaction
 func (p *Postgres) UpdateTourAndPlayer(tourID, playerID string) error {
-	tx, err := p.DB.Begin()
+	tx, err := p.db.Begin()
 	if err != nil {
 		return errors.Error{Code: errors.UnexpectedError, Message: "update tournament and player: failed to start transaction", Info: err.Error()}
 	}
@@ -33,7 +44,7 @@ func (p *Postgres) UpdateTourAndPlayer(tourID, playerID string) error {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2)
 	}
-	dep, err := p.GetDeposit(tourID)
+	dep, err := p.getDeposit(tourID)
 	if err != nil {
 		err2 := tx.Rollback()
 		return errors.Join(err, err2)
